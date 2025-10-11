@@ -164,7 +164,7 @@ class MainFrame(wx.Frame):
         self.dtype = self.poser.get_dtype()
         self.device = device
         self.image_size = self.poser.get_image_size()
-        self.batch_size = 32
+        self.batch_size = 64
 
         self.wx_source_image = None
         self.torch_source_image = None
@@ -281,7 +281,7 @@ class MainFrame(wx.Frame):
         patch_buttons_sizer.Add(self.generate_optimized_button, 0, wx.EXPAND)
 
         # GPU 배치 크기 설정 버튼
-        self.batch_size_button = wx.Button(patch_buttons_panel, wx.ID_ANY, "Set Batch Size (Current: 32)")
+        self.batch_size_button = wx.Button(patch_buttons_panel, wx.ID_ANY, "Set Batch Size (Current: 64)")
         self.batch_size_button.Bind(wx.EVT_BUTTON, self.set_batch_size)
         patch_buttons_sizer.Add(self.batch_size_button, 0, wx.EXPAND)
 
@@ -662,7 +662,7 @@ class MainFrame(wx.Frame):
             self.close_progress_dialog_safely(dialog)
 
     def generate_random_samples(self, sample_count):
-        """랜덤 샘플링으로 지정된 수만큼만 생성"""
+        """랜덤 샘플링으로 지정된 수만큼만 생성 - 빠른 저장"""
         params = self.find_required_parameters()
         if not params:
             return
@@ -678,6 +678,10 @@ class MainFrame(wx.Frame):
         try:
             base_pose = self.get_current_pose()
             
+            # ThreadPoolExecutor로 저장 작업 병렬화
+            executor = ThreadPoolExecutor(max_workers=4)
+            save_futures = []
+            
             for i in range(sample_count):
                 # 랜덤 알파 값 생성
                 random_alphas = [numpy.random.random() for _ in range(8)]
@@ -692,13 +696,21 @@ class MainFrame(wx.Frame):
                 
                 # 파일명 생성
                 filename = f"random_sample_{i:06d}_{'_'.join([f'{a:.3f}' for a in random_alphas])}.png"
-                self.save_patch(numpy_image, filename, "random_samples")
+                
+                # 비동기 저장
+                future = executor.submit(self.save_patch_async, numpy_image.copy(), filename, "random_samples")
+                save_futures.append(future)
                 
                 # 진행 상황 업데이트
                 if i % 50 == 0:
                     if not dialog.Update(i, f"Generated {i}/{sample_count} samples")[0]:
+                        executor.shutdown(wait=True)
                         return
                     wx.GetApp().Yield()
+            
+            # 모든 저장 작업 완료 대기
+            print(f"Waiting for all {len(save_futures)} save operations to complete...")
+            executor.shutdown(wait=True)
             
             self.close_progress_dialog_safely(dialog)
             wx.CallAfter(lambda: wx.MessageBox(
