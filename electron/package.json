@@ -1,0 +1,16 @@
+{
+  "name": "ai-vtuber-electron",
+  "version": "0.1.0",
+  "description": "AI Vtuber Studio Electron wrapper",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-packager . voice-changer-native-client --platform=win32 --arch=x64 --out=dist-win --overwrite --prune=true --asar",
+    "build": "npm run build:win"
+  },
+  "devDependencies": {
+    "electron": "^31.3.0",
+    "electron-packager": "^17.1.2"
+  }
+}
