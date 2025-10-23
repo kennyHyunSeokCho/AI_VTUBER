@@ -8,6 +8,15 @@ python src/tha4/app/fmpm.py
 ____> fmpm.py 는 쿠다 설치가 되어있어야함.
 
 
+
+
+src/tha4/app/./build.sh
+npm build
+npm start 
+
+일단 맥 가능
+
+
 # packages in environment at /home/moomininmoon/anaconda3/envs/anime-env:
 #
 # Name                       Version                   Build               Channel
