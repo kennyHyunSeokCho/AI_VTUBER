@@ -109,16 +109,40 @@ ipcMain.on('toggle-overlay', () => {
   }
 });
 
+// --- 이 부분이 '../../../dist/main'으로 수정되었습니다 ---
 ipcMain.on('start-voice-changer', (event) => {
-  const voiceChangerPath = path.join(__dirname, '../../../dist/start_https.command');
+  let scriptName;
+  let execCommand;
   
-  exec(`open "${voiceChangerPath}"`, (error, stdout, stderr) => {
+  if (process.platform === 'darwin') { // macOS
+    scriptName = 'start_https.command';
+    const voiceChangerPath = path.join(__dirname, '../../../dist/main', scriptName); // 경로 수정됨
+    execCommand = `open "${voiceChangerPath}"`;
+    
+  } else if (process.platform === 'win32' && process.arch === 'x64') { // Windows 64-bit
+    scriptName = 'start_https.bat';
+    const voiceChangerPath = path.join(__dirname, '../../../dist/main', scriptName); // 경로 수정됨
+    execCommand = `start "" "${voiceChangerPath}"`;
+    
+  } else {
+    // 다른 OS 또는 32-bit Windows 지원하지 않음
+    const unsupportedError = `Unsupported OS/Arch: ${process.platform} ${process.arch}`;
+    console.error(unsupportedError);
+    event.reply('voice-changer-error', unsupportedError);
+    return;
+  }
+  
+  exec(execCommand, (error, stdout, stderr) => {
     if (error) {
-      console.error(`Voice Changer Error: ${error}`);
+      console.error(`Voice Changer Error: ${error.message}`);
       event.reply('voice-changer-error', error.message);
       return;
     }
-    console.log('Voice Changer started');
+    if (stderr) {
+      console.warn(`Voice Changer Stderr: ${stderr}`);
+    }
+    console.log('Voice Changer start command issued.');
     event.reply('voice-changer-started');
   });
 });
+// --- 여기까지 수정되었습니다 ---
