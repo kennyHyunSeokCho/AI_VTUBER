@@ -11,7 +11,11 @@ ____> fmpm.py 는 쿠다 설치가 되어있어야함.
 
 
 src/tha4/app/./build.sh
+
+
 npm build
+
+
 npm start 
 
 일단 맥 가능
