@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도전! 버튜버</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>도전! 버튜버</h1>
+
+        </header>
+
+        <div class="controls">
+            <button id="overlayBtn" class="btn btn-primary">Show Overlay</button>
+            <button id="voiceChangerBtn" class="btn btn-accent">Voice Changer</button>
+        </div>
+
+        <div class="status-panel">
+            <div class="status-row">
+                <span id="statusText" class="status">Status: Ready</span>
+            </div>
+        </div>
+
+
+        <div class="log-panel" id="logPanel">
+            <div class="log-header">System Log</div>
+            <div class="log-content" id="logContent"></div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

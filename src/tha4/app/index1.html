@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTuber Controller - Enhanced Eye Recognition</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>VTuber Controller</h1>
+            <p class="subtitle">Enhanced Eye Recognition</p>
+        </header>
+
+        <div class="controls">
+            <button id="startBtn" class="btn btn-primary">Start VTuber Mode</button>
+            <button id="overlayBtn" class="btn btn-secondary">Show Overlay</button>
+            <button id="voiceChangerBtn" class="btn btn-accent">Voice Changer</button>
+        </div>
+
+        <div class="status-panel">
+            <div class="status-row">
+                <span id="statusText" class="status">Status: Stopped</span>
+                <span id="fpsText" class="fps">FPS: 0</span>
+            </div>
+            <div class="eye-debug" id="eyeDebugText">
+                Eye Blink: L=0.000(EWL0) R=0.000(EWR0)
+            </div>
+        </div>
+
+        <div class="settings">
+            <div class="setting-row">
+                <label>Sensitivity:</label>
+                <input type="range" id="sensitivitySlider" min="20" max="80" value="50">
+                <span id="sensitivityValue">50%</span>
+            </div>
+
+            <div class="setting-row">
+                <label>Chroma Key:</label>
+                <select id="chromaChoice">
+                    <option value="green">Green</option>
+                    <option value="blue">Blue</option>
+                    <option value="black">Black</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="param-display" id="paramDisplay">
+            <div class="param-line">Target: Ready</div>
+            <div class="param-line">Matched: None</div>
+            <div class="param-line">Method: N/A</div>
+        </div>
+
+        <div class="info-panel">
+            <h3>Enhanced Eye Recognition System:</h3>
+            <ul>
+                <li>Very sensitive eye blink detection (0.02 threshold)</li>
+                <li>Multi-source eye parameter fusion</li>
+                <li>Smooth 3-frame averaging to reduce jitter</li>
+                <li>Sequential matching: Eyes → Mouth → Head</li>
+                <li>Fixed left/right eye mirroring issue</li>
+            </ul>
+            <p class="info-note">Just start and blink naturally!</p>
+        </div>
+
+        <div class="log-panel" id="logPanel">
+            <div class="log-header">System Log</div>
+            <div class="log-content" id="logContent"></div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

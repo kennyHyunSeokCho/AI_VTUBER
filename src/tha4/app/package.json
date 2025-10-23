@@ -1,0 +1,19 @@
+{
+  "name": "vtuber-controller",
+  "version": "1.0.0",
+  "description": "VTuber Controller with Enhanced Eye Recognition",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": ["vtuber", "electron", "ifacialmocap"],
+  "author": "VTuber Creator",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  }
+}
