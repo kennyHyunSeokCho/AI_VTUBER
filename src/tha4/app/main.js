@@ -116,7 +116,7 @@ ipcMain.on('start-voice-changer', (event) => {
   
   if (process.platform === 'darwin') { // macOS
     scriptName = 'start_https.command';
-    const voiceChangerPath = path.join(__dirname, '../../../dist/main', scriptName); // 경로 수정됨
+    const voiceChangerPath = path.join(__dirname, '../../../dist', scriptName); // 경로 수정됨
     execCommand = `open "${voiceChangerPath}"`;
     
   } else if (process.platform === 'win32' && process.arch === 'x64') { // Windows 64-bit
