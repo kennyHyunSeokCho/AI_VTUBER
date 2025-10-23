@@ -1,0 +1,33 @@
+.blend-card { margin-top: 16px; background: #191919; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px; }
+.blend-title { font-size: 18px; margin-bottom: 6px; }
+.blend-sub { color: #9a9a9a; font-size: 12px; margin-bottom: 12px; }
+
+.row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.row.align { align-items: center; }
+.row.gap { gap: 8px; }
+
+.lbl { width: 90px; font-size: 12px; color: #c8c8c8; }
+.txt { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #303030; background: #1c1c1c; color: #eaeaea; }
+.range { flex: 1; }
+.num { width: 70px; padding: 8px 10px; border-radius: 8px; border: 1px solid #303030; background: #1c1c1c; color: #eaeaea; }
+
+.drop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.drop-zone { height: 220px; border: 2px dashed #3a3a3a; border-radius: 10px; background: #202020; color: #e0e0e0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; position: relative; }
+.drop-zone.drag { background: #232323; border-color: #6a6a6a; }
+.badge { position: absolute; top: 8px; left: 8px; font-size: 11px; background: #262626; border: 1px solid #2f2f2f; padding: 2px 6px; border-radius: 6px; color: #d8d8d8; }
+.drop-title { font-size: 12px; color: #cfcfcf; margin-bottom: 6px; }
+.drop-copy { font-size: 16px; }
+.drop-sep { color: #8a8a8a; margin: 4px 0; }
+.drop-action { font-size: 12px; color: #dcdcdc; }
+.picked { position: absolute; bottom: 8px; left: 10px; right: 10px; font-size: 12px; color: #bdbdbd; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+.ratio-hint { font-size: 12px; color: #9a9a9a; margin: 6px 0; }
+.ratio-bar { display: flex; justify-content: space-between; font-size: 12px; color: #c8c8c8; margin-bottom: 8px; }
+
+.btn { padding: 8px 12px; border-radius: 8px; border: 1px solid #2a2a2a; background: #262626; color: #eaeaea; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.btn.primary { background: #2d6cdf; border-color: #2d6cdf; color: #fff; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.out { width: 100%; min-height: 80px; padding: 10px 12px; border-radius: 8px; border: 1px solid #303030; background: #1c1c1c; color: #eaeaea; resize: vertical; }
+
+@media (max-width: 768px) { .drop-grid { grid-template-columns: 1fr; } }

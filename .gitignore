@@ -1,0 +1,23 @@
+# env
+.env
+.env.*
+*.env
+
+# venv
+.venv/
+venv/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# ide
+.vscode/
+.idea/
+
+# outputs
+downloads/
+artifacts/

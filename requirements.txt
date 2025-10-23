@@ -1,0 +1,9 @@
+boto3>=1.28
+python-dotenv>=1.0
+runpod>=1.7
+rich>=13.7
+click>=8.1
+fastapi>=0.104
+uvicorn[standard]>=0.24
+python-multipart>=0.0.6
+torch>=2.1; platform_system=="Windows" or platform_system=="Linux"
