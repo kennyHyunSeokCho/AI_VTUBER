@@ -7,6 +7,8 @@ from typing import List, Optional, Dict, Any
 import re
 import time
 from pydantic import BaseModel
+import subprocess
+import shutil
 
 from src.config import get_settings
 from src.s3_utils import upload_path, list_objects, upload_bytes, upload_file_to_key
@@ -63,6 +65,58 @@ def _trigger_training_background(uid: str, run: Optional[str] = None, extra: Opt
         print(f"[학습 제출 실패] uid:{uid} err:{e}")
 
 
+def _get_ffmpeg_exe() -> str:
+    """ffmpeg 실행파일 경로 반환. 시스템에 없으면 imageio-ffmpeg 폴백 시도.
+    - 한글 주석: 우선 PATH에서 ffmpeg를 찾고, 없으면 파이썬 패키지 imageio-ffmpeg가 제공하는 바이너리를 사용
+    """
+    # 1) 시스템 PATH에서 ffmpeg 찾기
+    path = shutil.which("ffmpeg")
+    if path:
+        return path
+    # 2) imageio-ffmpeg 폴백
+    try:
+        import imageio_ffmpeg  # type: ignore
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        raise HTTPException(status_code=500, detail="ffmpeg 실행파일을 찾을 수 없습니다. ffmpeg를 설치하거나 imageio-ffmpeg를 추가하세요.")
+
+
+def _convert_to_wav_bytes(file_bytes: bytes, input_suffix: str) -> bytes:
+    """주어진 바이트(원본 확장자 참고)를 ffmpeg로 WAV 바이트로 변환.
+    - 항상 WAV로 변환하여 일관성 보장
+    - ffmpeg 표준 출력 사용 대신 임시 파일로 안전하게 처리
+    """
+    ffmpeg_exe = _get_ffmpeg_exe()
+    # 입력 임시 파일 생성
+    with tempfile.NamedTemporaryFile(delete=False, suffix=input_suffix) as in_f:
+        in_f.write(file_bytes)
+        in_path = Path(in_f.name)
+    # 출력 임시 파일 경로
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as out_f:
+        out_path = Path(out_f.name)
+    try:
+        # 단순 변환 (채널/샘플레이트는 원본 유지). 필요 시 -ac/-ar 옵션으로 표준화 가능
+        proc = subprocess.run([
+            ffmpeg_exe, '-y', '-hide_banner', '-loglevel', 'error',
+            '-i', str(in_path), str(out_path)
+        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        wav_bytes = out_path.read_bytes()
+        return wav_bytes
+    except subprocess.CalledProcessError as e:
+        err = e.stderr.decode('utf-8', errors='ignore') if e.stderr else str(e)
+        raise HTTPException(status_code=500, detail=f"오디오 변환 실패: {err}")
+    finally:
+        # 임시 파일 정리
+        try:
+            in_path.unlink(missing_ok=True)
+        except Exception:
+            pass
+        try:
+            out_path.unlink(missing_ok=True)
+        except Exception:
+            pass
+
+
 @app.get("/")
 async def root():
     return {"status": "ok", "message": "Voice Blend API is running"}
@@ -74,20 +128,24 @@ async def upload_audio(
     user_id: str = "default",
     background_tasks: BackgroundTasks = None,
 ):
-    allowed_extensions = {".mp3"}
+    # 허용 확장자: mp3, m4a, wav, webm (최종 저장은 WAV)
+    allowed_extensions = {".mp3", ".m4a", ".wav", ".webm"}
     orig_name = Path(file.filename).name
     file_ext = Path(orig_name).suffix.lower()
     if file_ext not in allowed_extensions:
-        raise HTTPException(status_code=400, detail="mp3 파일만 업로드 가능합니다.")
+        raise HTTPException(status_code=400, detail="지원하지 않는 형식입니다. mp3/m4a/wav 파일을 업로드하세요.")
     user_id_clean = _sanitize_user_id(user_id)
 
-    # 파일명은 무조건 {uid}.mp3 로 저장
-    target = f"{user_id_clean}.mp3"
+    # 최종 저장 파일명은 무조건 {uid}.wav
+    target = f"{user_id_clean}.wav"
 
     try:
+        # 업로드 파일을 WAV로 변환
         content = await file.read()
+        wav_bytes = _convert_to_wav_bytes(content, input_suffix=file_ext)
+
         key = f"voice_blend/{user_id_clean}/uploads/{target}"
-        uploaded_key = upload_bytes(content, key)
+        uploaded_key = upload_bytes(wav_bytes, key)
 
         # 업로드 직후 Runpod 학습 자동 트리거 (백그라운드)
         if background_tasks is not None:
@@ -118,7 +176,8 @@ async def upload_multiple_audio(
 ):
     if not files:
         raise HTTPException(status_code=400, detail="파일이 없습니다")
-    allowed_extensions = {".mp3"}
+    # 허용 확장자: mp3, m4a, wav (최종 저장은 WAV)
+    allowed_extensions = {".mp3", ".m4a", ".wav"}
     uploaded_results = []
     user_id_clean = _sanitize_user_id(user_id)
     try:
@@ -131,13 +190,15 @@ async def upload_multiple_audio(
                 uploaded_results.append({
                     "file_name": orig_name,
                     "status": "error",
-                    "message": f"지원하지 않는 파일 형식: {file_ext} (mp3만 허용)"
+                    "message": f"지원하지 않는 파일 형식: {file_ext} (허용: mp3/m4a/wav)"
                 })
                 continue
+            # WAV로 변환 후 저장
             content = await file.read()
-            target = f"{user_id_clean}.mp3" if idx == 0 else f"{user_id_clean}_{idx+1}.mp3"
+            wav_bytes = _convert_to_wav_bytes(content, input_suffix=file_ext)
+            target = f"{user_id_clean}.wav" if idx == 0 else f"{user_id_clean}_{idx+1}.wav"
             key = s3_prefix + target
-            uploaded_key = upload_bytes(content, key)
+            uploaded_key = upload_bytes(wav_bytes, key)
             uploaded_keys_all.append(uploaded_key)
             uploaded_results.append({
                 "file_name": target,

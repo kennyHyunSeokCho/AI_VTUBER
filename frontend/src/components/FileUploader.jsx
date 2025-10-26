@@ -8,13 +8,19 @@ function FileUploader({ userId, onUploadSuccess }) {
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef(null)
 
-  const isMp3 = (file) => file && file.name && file.name.toLowerCase().endsWith('.mp3')
+  // 허용 확장자 검사: mp3, m4a, wav
+  const isAllowedAudio = (file) => {
+    // 한글 주석: 사용자가 올린 파일 확장자를 확인하여 허용 여부 판단
+    if (!file || !file.name) return false
+    const name = file.name.toLowerCase()
+    return name.endsWith('.mp3') || name.endsWith('.m4a') || name.endsWith('.wav')
+  }
 
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files || [])
-    const mp3Files = files.filter(isMp3)
-    if (mp3Files.length !== files.length) alert('mp3 파일만 업로드 가능합니다.')
-    setSelectedFiles(mp3Files)
+    const allowed = files.filter(isAllowedAudio)
+    if (allowed.length !== files.length) alert('mp3, m4a, wav 파일만 업로드 가능합니다.')
+    setSelectedFiles(allowed)
   }
 
   const handleDragEnter = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true) }
@@ -23,13 +29,13 @@ function FileUploader({ userId, onUploadSuccess }) {
   const handleDrop = (e) => {
     e.preventDefault(); e.stopPropagation(); setIsDragging(false)
     const files = Array.from(e.dataTransfer.files || [])
-    const mp3Files = files.filter(isMp3)
-    if (mp3Files.length !== files.length) alert('mp3 파일만 업로드 가능합니다.')
-    setSelectedFiles(mp3Files)
+    const allowed = files.filter(isAllowedAudio)
+    if (allowed.length !== files.length) alert('mp3, m4a, wav 파일만 업로드 가능합니다.')
+    setSelectedFiles(allowed)
   }
 
   const uploadFiles = async () => {
-    if (selectedFiles.length === 0) { alert('mp3 파일을 선택해주세요'); return }
+    if (selectedFiles.length === 0) { alert('mp3, m4a 또는 wav 파일을 선택해주세요'); return }
     setIsUploading(true)
     try {
       const formData = new FormData()
@@ -81,7 +87,7 @@ function FileUploader({ userId, onUploadSuccess }) {
           ref={fileInputRef}
           type="file"
           multiple
-          accept=".mp3,audio/mpeg"
+          accept=".mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav"
           onChange={handleFileSelect}
           style={{ display: 'none' }}
         />
@@ -90,12 +96,12 @@ function FileUploader({ userId, onUploadSuccess }) {
           <div className="big-icon">⬆️</div>
           <div className="big-title">Drop Audio Here</div>
           <div className="big-sep">- or -</div>
-          <div className="big-action">Click to Upload (mp3)</div>
+          <div className="big-action">Click to Upload (mp3 / m4a / wav)</div>
         </div>
 
         {selectedFiles.length > 0 && (
           <div className="selected-files">
-            <p className="file-count">{selectedFiles.length}개 mp3 파일 선택됨</p>
+            <p className="file-count">{selectedFiles.length}개 오디오 파일 선택됨</p>
             <div className="file-list-preview">
               {selectedFiles.map((file, index) => (
                 <div key={index} className="file-item-preview">
