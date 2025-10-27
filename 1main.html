@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도전 버튜버!</title>
+    
+    <style>
+        @font-face {
+            font-family: 'NanumMyeongjo';
+            src: url('path/to/NanumMyeongjo.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Javanese Text'; 
+            src: url('path/to/JavaneseText.ttf') format('truetype'); 
+ }
+        /* 기본 마진 제거 및 전체 화면 설정 */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw; /* 뷰포트 너비 100% */
+            height: 100vh; /* 뷰포트 높이 100% */
+            overflow: hidden; /* 스크롤바 제거 */
+        }
+
+        :root {
+            --sidebar-width: 291px;
+        }
+
+        /* ---------------------------------
+            1. 최상위 컨테이너 (div) 스타일: 전체 화면으로 확장
+            --------------------------------- */
+        .container {
+            width: 100vw; /* 전체 화면 너비 */
+            height: 100vh; /* 전체 화면 높이 */
+            background: #FF019B; /* 핑크색 배경 */
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            overflow: hidden; 
+        }
+
+        #sidebar-toggle {
+            width: 48px;
+            height: 28px;
+            position: absolute;
+            right: 115px; 
+            top: 40px; 
+            display: block;
+            cursor: pointer;
+            z-index: 101; 
+        }
+        .image-icon-top {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ---------------------------------
+            2. 첫 번째 이미지 (image 2.png) 스타일: 픽셀 크기 유지 및 중앙 정렬
+            --------------------------------- */
+        .image-main {
+            width: 1444px; /* 원본 픽셀 크기 유지 요청 반영 */
+            height: 540px; /* 원본 픽셀 크기 유지 요청 반영 */
+            
+            position: absolute; 
+            /* 화면 정중앙으로 이동 */
+            left: 50%; 
+            top: 50%; 
+            /* 자신의 크기만큼 되돌려 정렬 (중앙 정렬 기법) */
+            transform: translate(-50%, -50%); 
+        }
+
+        /* ---------------------------------
+            3. 아이콘 링크 (<a>) 스타일: 픽셀 크기 유지 및 픽셀 위치로 조정
+            --------------------------------- */
+
+
+        #sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            display: none; 
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+       #sidebar-wrapper {
+            position: fixed;
+            top: 0;
+            right: 0; /* 우측 끝에 고정 */
+            width: var(--sidebar-width); /* 291px 유지 */
+            height: 100vh;
+            z-index: 100;
+            
+            /* 닫힌 상태: 오른쪽으로 100% 이동하여 화면 밖으로 밀어냄 */
+            transform: translateX(100%); 
+            transition: transform 0.3s ease-in-out; 
+
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+            
+            /* 사이드바 자체에서 가로 오버플로우를 확실히 숨깁니다. */
+            overflow-x: hidden; 
+        }
+
+       #sidebar-wrapper.open {
+            /* 열린 상태: 원래 위치로 이동 (화면 안으로 들어옴) */
+            transform: translateX(0); 
+        }
+
+        /* 사이드바 헤더 (검은색 상단) */
+        .sidebar-header {
+            width: 100%;
+            height: 100px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #FF019B;
+        }
+        /* 사이드바 메인 (분홍색 본체) */
+        .sidebar-main {
+            width: 100%;
+            height: calc(100% - 100px); 
+            position: absolute;
+            top: 100px;
+            left: 0;
+            background: black;
+            /* 내부 콘텐츠의 세로 스크롤만 허용 */
+            overflow-y: hidden; 
+            overflow-x: hidden; /* 혹시 모를 내부 가로 스크롤 방지 */
+        }
+
+        /* --- 사이드바 내부 요소 위치 (가로 스크롤 유발 요소 수정) --- */
+        .sidebar-main .menu-login {
+            width: 55px; height: 23px; position: absolute; left: 41px; top: 51px; text-align: center; color: #FF019B; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word;
+            text-decoration: none; 
+            display: block; 
+        }
+        .sidebar-main .menu-avatar {
+            width: 82px; height: 38px; position: absolute; left: 187px; top: 137px; text-align: center; color: #FF019B; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar-main .menu-voice {
+            width: 82px; height: 38px; position: absolute; left: 29px; top: 242px; text-align: center; color: #FF019B; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar-main .menu-server {
+            width: 82px; height: 38px; position: absolute; left: 187px; top: 337px; text-align: center; color: #FF019B; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar-main .divider-1 {
+            width: 146.52px; height: 0.51px; position: absolute; left: 110.98px; top: 71.24px; outline: 1px #FF019B solid; outline-offset: -0.50px;
+        }
+        .sidebar-main .divider-2 {
+            width: 146.52px; height: 0.51px; position: absolute; left: 110.98px; top: 263.24px; outline: 1px #FF019B solid; outline-offset: -0.50px;
+        }
+        .sidebar-main .divider-3 {
+            width: 135px; height: 1px; position: absolute; left: 49px; top: 159px; outline: 1px #FF019B solid; outline-offset: -0.50px;
+        }
+        .sidebar-main .divider-4 {
+            width: 135px; height: 1px; position: absolute; left: 49px; top: 360px; outline: 1px #FF019B solid; outline-offset: -0.50px;
+        }
+
+        .sidebar-main .avatar-circle-wrapper {
+            width: 72px;
+            height: 72px;
+            position: absolute;
+            right: 28px; /* 가로 위치 조정: 숫자를 줄이면 왼쪽으로, 늘리면 오른쪽으로 이동 */
+            top: 150px; /* 세로 위치 조정: 숫자를 줄이면 위로, 늘리면 아래로 이동 */
+        }
+        
+        /* 슬로건 너비 및 위치 조정 (가로 스크롤바 유발 요소 제거) */
+        .sidebar-main .slogan-1 {
+            width: 100%; 
+            height: 25px; 
+            position: absolute; 
+            left: 0px; 
+            bottom: 75px; 
+            text-align: center; 
+            color: #FF019B; font-size: 13px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word; letter-spacing: 0.2em;}
+        .sidebar-main .slogan-2 {
+            width: 100%; 
+            height: 25px; 
+            position: absolute; 
+            left: 0px; 
+            bottom: 40px; 
+            text-align: center; 
+            color: #FF019B; font-size: 10px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word; letter-spacing: 0.2em;
+        }
+        
+        /* 이미지 위치 */
+        .sidebar-main .image-bottom {
+            width: 245px; 
+            height: 282px; 
+            position: absolute; 
+            left: 24px; 
+            bottom: 140px; }
+
+
+    </style>
+</head>
+<body>
+
+        <div id="sidebar-toggle" class="image-icon-link" title="메뉴 열기/닫기">
+            <img class="image-icon-top" src="assets/image.png" alt="아이콘">
+        </div>
+
+    <div class="container">
+
+        <img class="image-main" src="assets/image 2.png" alt="메인 디자인 요소">
+
+    </div>
+
+       <div id="sidebar-overlay"></div>
+
+        <!-- 2. 사이드바 전체 래퍼 -->
+        <div id="sidebar-wrapper">
+            <!-- 사이드바 헤더 (검은색 상단) -->
+            <div class="sidebar-header"></div>
+            <!-- 사이드바 메인 (분홍색 본체) -->
+            <div class="sidebar-main">
+                <!-- A2. 메뉴 링크 -->
+                <a class="menu-login" href="3login.html">Login</a>
+                <div class="divider-1"></div>
+            <div class="avatar-circle-wrapper">
+                 <div style="width: 72px; height: 72px; border-radius: 9999px; border: 1px black solid; position: absolute;"></div>
+                     <circle cx="36" cy="36" r="35.5" stroke="black"/>
+                 </svg>
+             </div>
+                <div class="menu-avatar">Avatar</div> <!-- 링크 없음 -->
+                <div class="divider-3"></div>
+                <div class="menu-voice">Voice</div> <!-- 링크 없음 -->
+                <div class="divider-2"></div>
+                <div class="menu-server">Server</div> <!-- 링크 없음 -->
+                <div class="divider-4"></div>
+                <!-- A3. 기타 사이드바 요소 -->
+                <!-- assets/image6.png 소스 복원 -->
+                <img class="image-bottom" src="assets/image 3.png" alt="아바타 이미지">
+                <div class="slogan-1">Y o u , b u t v i r t u a l !</div>
+                <div class="slogan-2">Turn imagination into identity</div>
+            </div>
+        </div>
+
+
+    <script>
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarWrapper = document.getElementById('sidebar-wrapper');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+
+function toggleSidebar() {
+            const isOpening = !sidebarWrapper.classList.contains('open');
+
+            sidebarWrapper.classList.toggle('open');
+            
+            if (isOpening) {
+                sidebarOverlay.style.display = 'block';
+                // 10ms 지연 후 투명도 변경 (transition 작동을 위함)
+                setTimeout(() => sidebarOverlay.style.opacity = '1', 10); 
+            } else {
+                sidebarOverlay.style.opacity = '0';
+                // transition이 끝난 후 display: none 처리
+                setTimeout(() => {
+                    sidebarOverlay.style.display = 'none';
+                }, 300); 
+            }
+        }
+
+
+        // 사이드바 토글 버튼 클릭 이벤트
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+        }
+        
+        // 오버레이 클릭 시 사이드바 닫기
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', toggleSidebar); 
+        }
+
+        // ESC 키 입력 시 사이드바 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sidebarWrapper.classList.contains('open')) {
+                toggleSidebar();
+            }
+        });
+    </script>
+</body>
+</html>

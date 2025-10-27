@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도전 버튜버!</title>
+    
+    <style>
+        /* 폰트 정의 (경로가 올바른지 확인해주세요) */
+        @font-face {
+            font-family: Alexandria;
+            src: url('path/to/Alexandria.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Javanese Text'; 
+            src: url('path/to/JavaneseText.ttf') format('truetype');
+        }
+
+        /* 기본 마진 제거 및 뷰포트 전체 사용 */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw; 
+            height: 100vh; 
+            overflow-x: hidden; /* 가로 스크롤바 제거를 위한 필수 설정 */
+        }
+        
+        /* 사이드바 너비 변수 정의 */
+        :root {
+            --sidebar-width: 291px;
+        }
+
+        /* ---------------------------------
+            1. 최상위 컨테이너 (.container) 스타일 (전체 화면 고정)
+            --------------------------------- */
+        .container {
+            width: 100vw; 
+            height: 100vh; 
+            background: #261D23; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            overflow: hidden; /* 내부 오버플로우가 외부 스크롤바를 만들지 않도록 방지 */
+        }
+
+        /* ---------------------------------
+            2. 핵심 채팅 영역 및 폼 스타일
+            --------------------------------- */
+
+        /* A. 우측 상단 아이콘 (토글 버튼 역할) */
+        #sidebar-toggle {
+            width: 48px;
+            height: 28px;
+            position: absolute;
+            right: 115px; 
+            top: 40px; 
+            display: block;
+            cursor: pointer;
+            z-index: 101; 
+        }
+        .image-icon-top {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* F. 채팅 영역 스타일 */
+        #chat-area {
+            width: 688px;
+            height: calc(100vh - 380px); 
+            position: absolute;
+            left: 50%; 
+            transform: translateX(-50%); 
+            top: 80px; 
+            overflow-y: auto;
+            display: flex; 
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* G, H, I, J. 채팅 메시지 및 스크롤바 스타일 */
+        .chat-message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            margin-bottom: 10px;
+            font-family: 'NanumMyeongjo', serif; 
+            font-size: 16px; 
+            line-height: 1.4;
+            word-wrap: break-word;
+            opacity: 0; 
+            transition: opacity 0.5s;
+        }
+        .bot-message {
+            background: #1B1B1B; 
+            color: white; 
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .user-message {
+            background: #FF019B;
+            color: black;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        #chat-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        #chat-area::-webkit-scrollbar-thumb {
+            background-color: #FF019B;
+            border-radius: 10px;
+        }
+        #chat-area::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 입력 폼 컨테이너 */
+        #input-form {
+            width: 688px;
+            height: 260px;
+            position: absolute;
+            left: 50%; 
+            transform: translateX(-50%); 
+            bottom: 40px; 
+            top: auto; 
+        }
+
+        /* 입력 필드/배경 박스 */
+        .input-box-background {
+            width: 100%; 
+            height: 180px;
+            position: absolute;
+            left: 0; 
+            top: 0; 
+            background: #1B1B1B; 
+            box-shadow: 0px 0px 30px rgba(255, 1, 155, 0.40); 
+            border-radius: 20px;
+            outline: 1px #FF019B solid; 
+        }
+        
+        /* 저장 버튼 */
+        .save-button-link {
+            width: 163px;
+            height: 48px; 
+            position: absolute;
+            right: auto; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            top: 212px; 
+            bottom: auto;
+            background: #FF019B; 
+            border-radius: 100px; 
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            z-index: 10; 
+        }
+        /* 저장 텍스트 */
+        .save-button-text {
+            color: black;
+            font-size: 24px;
+            font-family: 'NanumMyeongjo', serif;
+            font-weight: 600;
+            word-wrap: break-word;
+        }
+
+        /* 실제 입력 필드 (TEXTAREA) */
+        .input-field {
+            width: 643px; 
+            height: 140px;
+            position: absolute;
+            left: 25px; 
+            top: 20px;
+            background: transparent; 
+            border: none; 
+            resize: none; 
+            padding: 0; 
+            color: white;
+            font-size: 15px;
+            font-family: 'NanumMyeongjo', serif;
+            font-weight: 600;
+            line-height: 1.5; 
+        }
+        .input-field:focus {
+            outline: none;
+        }
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.5); 
+            font-family: 'NanumMyeongjo', serif;
+            font-weight: 600;
+        }
+
+        /* ---------------------------------
+            3. 사이드바 스타일 (가로 스크롤바 방지 수정 포함)
+            --------------------------------- */
+
+        /* 사이드바 오버레이 */
+        #sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            display: none; 
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* 사이드바 전체 래퍼 */
+        #sidebar-wrapper {
+            position: fixed;
+            top: 0;
+            right: 0; /* 우측 끝에 고정 */
+            width: var(--sidebar-width); /* 291px 유지 */
+            height: 100vh;
+            z-index: 100;
+            
+            /* 닫힌 상태: 오른쪽으로 100% 이동하여 화면 밖으로 밀어냄 */
+            transform: translateX(100%); 
+            transition: transform 0.3s ease-in-out; 
+            
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+
+            /* 사이드바 자체에서 가로 오버플로우를 확실히 숨깁니다. */
+            overflow-x: hidden; 
+        }
+
+        /* 사이드바 열림 상태 */
+        #sidebar-wrapper.open {
+            /* 열린 상태: 원래 위치로 이동 (화면 안으로 들어옴) */
+            transform: translateX(0); 
+        }
+
+        /* 사이드바 헤더 (검은색 상단) */
+        .sidebar-header {
+            width: 100%;
+            height: 100px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: black;
+        }
+        /* 사이드바 메인 (분홍색 본체) */
+        .sidebar-main {
+            width: 100%;
+            height: calc(100% - 100px); 
+            position: absolute;
+            top: 100px;
+            left: 0;
+            background: #FF019B;
+            /* 내부 콘텐츠의 세로 스크롤만 허용 */
+            overflow-y: hidden; 
+            overflow-x: hidden; /* 혹시 모를 내부 가로 스크롤 방지 */
+        }
+
+        /* --- 사이드바 내부 요소 위치 (가로 스크롤 유발 요소 수정) --- */
+        .sidebar-main .menu-my {
+            width: 49px; height: 23px; position: absolute; left: 41px; top: 61px; text-align: center; color: black; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word;
+            text-decoration: none; 
+            display: block; 
+        }
+        .sidebar-main .menu-avatar {
+            width: 82px; height: 38px; position: absolute; left: 187px; top: 167px; text-align: center; color: black; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar-main .menu-voice {
+            width: 82px; height: 38px; position: absolute; left: 29px; top: 272px; text-align: center; color: black; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar-main .menu-server {
+            width: 82px; height: 38px; position: absolute; left: 187px; top: 367px; text-align: center; color: black; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar-main .divider-1 {
+            width: 146.52px; height: 0.51px; position: absolute; left: 110.98px; top: 81.24px; outline: 1px black solid; outline-offset: -0.50px;
+        }
+        .sidebar-main .divider-2 {
+            width: 146.52px; height: 0.51px; position: absolute; left: 110.98px; top: 293.24px; outline: 1px black solid; outline-offset: -0.50px;
+        }
+        .sidebar-main .divider-3 {
+            width: 135px; height: 1px; position: absolute; left: 49px; top: 189px; outline: 1px black solid; outline-offset: -0.50px;
+        }
+        .sidebar-main .divider-4 {
+            width: 135px; height: 1px; position: absolute; left: 49px; top: 390px; outline: 1px black solid; outline-offset: -0.50px;
+        }
+
+        .sidebar-main .avatar-circle-wrapper {
+            width: 72px;
+            height: 72px;
+            position: absolute;
+            right: 28px; /* 가로 위치 조정: 숫자를 줄이면 왼쪽으로, 늘리면 오른쪽으로 이동 */
+            top: 150px; /* 세로 위치 조정: 숫자를 줄이면 위로, 늘리면 아래로 이동 */
+        }
+        
+        /* 슬로건 너비 및 위치 조정 (가로 스크롤바 유발 요소 제거) */
+        .sidebar-main .slogan-1 {
+            width: 100%; 
+            height: 25px; 
+            position: absolute; 
+            left: 0px; 
+            bottom: 105px; 
+            text-align: center; 
+            color: black; font-size: 13px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word; letter-spacing: 0.2em;}
+        .sidebar-main .slogan-2 {
+            width: 100%; 
+            height: 25px; 
+            position: absolute; 
+            left: 0px; 
+            bottom: 70px; 
+            text-align: center; 
+            color: black; font-size: 10px; font-family: 'Javanese Text'; font-weight: 400; word-wrap: break-word; letter-spacing: 0.2em;
+        }
+        
+        /* 이미지 위치 */
+        .sidebar-main .image-bottom {
+            width: 245px; 
+            height: 282px; 
+            position: absolute; 
+            left: 24px; 
+            bottom: 190px; }
+
+        /* ---------------------------------
+            4. 로딩 모달 스타일
+            --------------------------------- */
+            
+        /* 모달 컨테이너 */
+        #loading-modal {
+            position: fixed; 
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999;
+        }
+
+        /* 모달 오버레이 */
+        .modal-overlay {
+            width: 100%; 
+            height: 100%; 
+            position: absolute; 
+            left: 0px;
+            top: 0px;
+            background: rgba(0, 0, 0, 0.50); 
+            transition: opacity 0.3s; 
+            opacity: 0; 
+        }
+
+        /* 로딩 팝업 박스 */
+        .loading-popup-box {
+            width: 589px;
+            height: 150px;
+            background: #FF019B; 
+            border-radius: 100px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 10000; 
+            opacity: 0; 
+        }
+
+        /* 로딩 텍스트 */
+        .loading-text {
+            text-align: center;
+            color: white; 
+            font-size: 20px;
+            font-family: 'Alexandria', normal;
+            font-weight: 700;
+            word-wrap: break-word;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        /* 로딩 모달 애니메이션 정의 */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-animate {
+            animation: fadeInScale 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- A. 아이콘 (사이드바 토글 버튼으로 변경됨) -->
+        <div id="sidebar-toggle" class="image-icon-link" title="메뉴 열기/닫기">
+            <img class="image-icon-top" src="assets/image5.png" alt="아이콘">
+        </div>
+        
+        <!-- F. 채팅 영역 --><div id="chat-area">
+            <!-- 메시지가 여기에 삽입됩니다. --></div>
+
+        <!-- INPUT FORM WRAPPER (하단 중앙 정렬) --><form id="input-form">
+            <!-- B. 입력 필드/배경 박스 (디자인 컨테이너) --><div class="input-box-background"></div>
+            
+            <!-- E. 실제 입력 필드 (TEXTAREA) --><textarea id="input-field" class="input-field" placeholder="내용을 입력하세요." required></textarea>
+            
+            <!-- C, D. 저장 버튼 --><button type="submit" id="save-button" class="save-button-link" title="이미지 생성 및 저장">
+                <div class="save-button-text">전   송</div> 
+            </button>
+        </form>
+
+        <!-- ---------------------------------
+            사이드바 영역
+            --------------------------------- -->
+        
+        <!-- 1. 사이드바 오버레이 -->
+        <div id="sidebar-overlay"></div>
+
+        <!-- 2. 사이드바 전체 래퍼 -->
+        <div id="sidebar-wrapper">
+            <!-- 사이드바 헤더 (검은색 상단) -->
+            <div class="sidebar-header"></div>
+            <!-- 사이드바 메인 (분홍색 본체) -->
+            <div class="sidebar-main">
+                <!-- A2. 메뉴 링크 -->
+                <a class="menu-my" href="5my.html">My</a>
+                <div class="divider-1"></div>
+            <div class="avatar-circle-wrapper">
+                 <div style="width: 72px; height: 72px; border-radius: 9999px; border: 1px black solid; position: absolute;"></div>
+                     <circle cx="36" cy="36" r="35.5" stroke="black"/>
+                 </svg>
+             </div>
+                <div class="menu-my">My</div>
+                <a class="menu-my" href="5my.html" ></a>
+                <div class="menu-avatar">Avatar</div> <!-- 링크 없음 -->
+                <a class="menu-avatar" href="7avatar.html" ></a>
+                <div class="divider-3"></div>
+                <div class="menu-voice">Voice</div> <!-- 링크 없음 -->
+                <a class="menu-voice" href="11voice.html"></a>
+                <div class="divider-2"></div>
+                <div class="menu-server">Server</div> <!-- 링크 없음 -->
+                <div class="divider-4"></div>
+                <!-- A3. 기타 사이드바 요소 -->
+                <!-- assets/image6.png 소스 복원 -->
+                <img class="image-bottom" src="assets/image6.png" alt="아바타 이미지">
+                <div class="slogan-1">Y o u , b u t v i r t u a l !</div>
+                <div class="slogan-2">Turn imagination into identity</div>
+            </div>
+        </div>
+
+        <!-- ---------------------------------
+            로딩 모달 래퍼
+            --------------------------------- -->
+        <div id="loading-modal">
+            <!-- F. 모달 오버레이 --><div id="modal-overlay-bg" class="modal-overlay"></div>
+            
+            <!-- G. 로딩 팝업 박스 -->
+            <div id="loading-popup-box" class="loading-popup-box"> 
+                <!-- H. 로딩 텍스트 --><div id="loading-text" class="loading-text">
+                    이미지를 생성 중입니다. . .
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        const chatArea = document.getElementById('chat-area');
+        const inputField = document.getElementById('input-field');
+        const inputForm = document.getElementById('input-form');
+        const saveButton = document.getElementById('save-button');
+        const loadingModal = document.getElementById('loading-modal');
+        const modalOverlayBg = document.getElementById('modal-overlay-bg');
+        const loadingPopupBox = document.getElementById('loading-popup-box');
+        const loadingText = document.getElementById('loading-text'); 
+        
+        // --- 사이드바 관련 요소 ---
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarWrapper = document.getElementById('sidebar-wrapper');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        // --- API & Auth Setup (MANDATORY) ---
+        const apiKey = ""; 
+
+        /**
+         * 입력 필드와 버튼을 활성화 또는 비활성화합니다.
+         * @param {boolean} disabled 비활성화 여부 (true/false)
+         */
+        function setInputsDisabled(disabled) {
+            inputField.disabled = disabled;
+            saveButton.disabled = disabled;
+            
+            if (disabled) {
+                inputField.style.opacity = '0.5';
+                inputField.style.cursor = 'not-allowed';
+                saveButton.style.opacity = '0.5'; 
+                saveButton.style.cursor = 'not-allowed'; 
+            } else {
+                inputField.style.opacity = '1';
+                inputField.style.cursor = 'auto';
+                saveButton.style.opacity = '1';
+                saveButton.style.cursor = 'pointer'; 
+            }
+        }
+
+        // 유틸리티: 지수 백오프를 사용한 재시도 로직
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return response;
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        // --- UI & Chat Functions ---
+
+        /**
+         * 챗 메시지를 채팅 영역에 추가하고 스크롤합니다.
+         */
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = text;
+            messageElement.classList.add('chat-message'); 
+
+            if (sender === 'bot') {
+                messageElement.classList.add('bot-message'); 
+            } else {
+                messageElement.classList.add('user-message'); 
+            }
+            
+            chatArea.appendChild(messageElement);
+            
+            // 페이드 인 효과 적용
+            setTimeout(() => {
+                messageElement.style.opacity = 1;
+            }, 10); 
+
+            // 스크롤을 맨 아래로 이동
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        /**
+         * 초기 봇 메시지를 순차적으로 표시하고, 마지막 메시지 후 1초 뒤에 입력을 활성화합니다.
+         */
+        function startChat() {
+            setInputsDisabled(true); // 초기에는 입력 비활성화 
+            
+            // 0.5초 뒤 첫 번째 메시지 표시
+            setTimeout(() => {
+                addMessage("안녕하세요! 원하시는 아바타 이미지 스타일을 입력해 주세요!", 'bot');
+            }, 500);
+
+            // 1.5초 뒤 두 번째 메시지 표시 (첫 메시지 후 1초 뒤)
+            setTimeout(() => {
+                addMessage("ex) 귀여운 느낌의 아이돌 소녀, 금발 긴 웨이브, 크고 반짝이는 분홍색 눈동자, 밝은 피부톤, 분홍색과 흰색의 귀여운 의상, 아이돌 애니메이션 스타일", 'bot');
+                
+                // 두 번째 메시지가 뜬 후 1.0초 뒤 입력 활성화
+                setTimeout(() => {
+                    setInputsDisabled(false); // 입력 활성화
+                }, 1000); 
+
+            }, 1500);
+        }
+
+        /**
+         * 로딩 모달을 자연스러운 애니메이션과 함께 표시합니다.
+         */
+        function showLoadingModal() {
+            loadingModal.style.display = 'flex'; 
+            
+            setTimeout(() => {
+                modalOverlayBg.style.opacity = '1';
+                loadingPopupBox.classList.add('modal-animate');
+                loadingPopupBox.style.opacity = '1';
+            }, 10);
+        }
+
+        /**
+         * 로딩 모달을 숨깁니다.
+         */
+        function hideLoadingModal() {
+             modalOverlayBg.style.opacity = '0'; 
+             loadingPopupBox.classList.remove('modal-animate');
+             loadingPopupBox.style.opacity = '0'; 
+             
+             setTimeout(() => {
+                 loadingModal.style.display = 'none';
+             }, 300);
+        }
+
+        /**
+         * 이미지를 생성하고 처리합니다. (API 호출 포함)
+         */
+        async function generateImage(prompt) {
+            
+            addMessage(prompt, 'user');
+            inputField.value = ''; 
+            setInputsDisabled(true);
+            
+            const loadingTimer = setTimeout(showLoadingModal, 1500);
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+                
+                const payload = { 
+                    instances: { prompt: prompt }, 
+                    parameters: { "sampleCount": 1} 
+                };
+
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                clearTimeout(loadingTimer);
+                hideLoadingModal(); 
+                setInputsDisabled(false); 
+
+                if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+                    const base64Data = result.predictions[0].bytesBase64Encoded;
+                    const imageUrl = `data:image/png;base64,${base64Data}`;
+                    
+                    addMessage("이미지 생성이 완료되었습니다! 다음 페이지에서 결과를 확인하세요.", 'bot');
+                    
+                    // TODO: 실제 리디렉션 로직이 필요하다면 여기에 추가
+
+                } else {
+                    addMessage("죄송합니다. 이미지 생성에 실패했습니다. 프롬프트 내용을 자세히 작성하여 다시 시도해 주세요.", 'bot');
+                    console.error("API call failed: No predictions or base64 data found.", result);
+                }
+
+            } catch (error) {
+                clearTimeout(loadingTimer);
+                hideLoadingModal(); 
+                setInputsDisabled(false); 
+                addMessage("네트워크 오류 또는 API 호출 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.", 'bot');
+                console.error("Image generation error:", error);
+            }
+        }
+
+        // --- Sidebar Logic ---
+        
+        /**
+         * 사이드바를 열거나 닫습니다.
+         */
+
+
+        function toggleSidebar() {
+            const isOpening = !sidebarWrapper.classList.contains('open');
+
+            sidebarWrapper.classList.toggle('open');
+            
+            if (isOpening) {
+                sidebarOverlay.style.display = 'block';
+                // 10ms 지연 후 투명도 변경 (transition 작동을 위함)
+                setTimeout(() => sidebarOverlay.style.opacity = '1', 10); 
+            } else {
+                sidebarOverlay.style.opacity = '0';
+                // transition이 끝난 후 display: none 처리
+                setTimeout(() => {
+                    sidebarOverlay.style.display = 'none';
+                }, 300); 
+            }
+        }
+
+        // --- Event Listeners ---
+        inputForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const prompt = inputField.value.trim();
+            if (prompt && !saveButton.disabled) {
+                generateImage(prompt);
+            }
+        });
+
+        // 사이드바 토글 버튼 클릭 이벤트
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+        }
+        
+        // 오버레이 클릭 시 사이드바 닫기
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', toggleSidebar); 
+        }
+
+        // ESC 키 입력 시 사이드바 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sidebarWrapper.classList.contains('open')) {
+                toggleSidebar();
+            }
+        });
+
+        // 페이지 로드 시 대화 시작
+        window.onload = startChat;
+
+    </script>
+</body>
+</html>
