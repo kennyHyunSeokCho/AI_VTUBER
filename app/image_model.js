@@ -15,6 +15,7 @@ const db = getFirestore(app);
 const generateImageCallable = httpsCallable(functions, 'generate_image');
 const generateTha4Callable = httpsCallable(functions, 'generate_tha4_model');
 
+// 스토리지에 있는 이미지 중 가장 최근에 생성한 이미지를 기반으로 모델 생성 요청
 export async function callGenerateTha4ModelFunction() {
   const user = auth.currentUser;
   if (!user) {
@@ -40,6 +41,11 @@ export async function callGenerateTha4ModelFunction() {
   }
 }
 
+// 이미지 생성 요청을 보내는 함수
+// prompt는 prompt 멤버를 가지는 객체이어야 하고, 이 prompt 멤버에는 사용자가 입력한 프롬프트가 들어감
+// 최종적으로 생성된 이미지는 스토리지에 저장되며, 또한 그 이미지의 스토리지 상 경로가 Firestore의 해당 사용자 문서에(정확히는 imagePath 필드에) 저장됨
+// imagePath는 제일 마지막으로 생성된 이미지의 경로 하나만을 저장함
+// 일단은 이미지 다운로드 및 모델 생성 시 이 imagePath가 가리키는 이미지, 즉 사용자가 제일 마지막으로 생성한 이미지를 대상으로 함
 export async function callGenerateImageFunction(prompt) {
   console.log(auth.currentUser);
   if (!auth.currentUser) {
@@ -159,3 +165,4 @@ export async function downloadModel() {
     }
   }
 }
+
