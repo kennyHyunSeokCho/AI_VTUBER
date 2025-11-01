@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>도전! 버튜버</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>도전! 버튜버</h1>
+
+    </header>
+
+    <div id="mainScreen">
+      <!-- login -->
+      <div class="controls">
+        <div id="loginInput">
+          <input
+          style="display: inline; width: auto"
+          type="text"
+          id="email"
+          name="email"
+          placeholder="Email"
+          
+        />
+        <input
+          style="display: inline; width: auto"
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Password"
+        />
+        </div>
+        <div id="loggedInUserInfo" style="display: none;"></div>
+
+        <button id="loginBtn" class="btn btn-accent">Login</button>
+        <button id="signUpBtn" class="btn btn-accent">회원 가입</button>
+      </div>
+
+      <div class="controls">
+        <button id="overlayBtn" class="btn btn-primary">Show Overlay</button>
+        <button id="voiceChangerBtn" class="btn btn-accent">Voice Changer</button>
+        <button id="voiceTrainBtn" class="btn btn-accent">음성 학습</button>
+
+        <button id="gotoImageRequestScreenBtn" class="btn btn-accent">이미지 생성 요청</button>
+        <button id="modelRequestBtn" class="btn btn-accent">모델 생성 요청</button>
+        <button id="modelDownloadBtn" class="btn btn-accent">생성된 모델 다운로드</button>
+      </div>
+
+      <div class="status-panel">
+        <div class="status-row">
+          <span id="statusText" class="status">Status: Ready</span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="imageRequestScreen" style="display: none;">
+      <p>이미지 생성 요청 화면</p>
+      <input id="imagePromptInput" type="text" placeholder="프롬프트 입력...">
+      <button id="sendImagePrompt">확인</button>
+      <button id="downloadImageBtn">이미지 다운</button>
+
+      <button id="gotoMainScreenBtn">메인 화면으로</button>
+    </div>
+
+
+    <div class="log-panel" id="logPanel">
+      <div class="log-header">System Log</div>
+      <div class="log-content" id="logContent"></div>
+    </div>
+  </div>
+
+  <script type="module" src="renderer.js"></script>
+</body>
+
+</html>
