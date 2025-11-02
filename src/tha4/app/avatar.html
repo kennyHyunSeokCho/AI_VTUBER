@@ -31,8 +31,13 @@
         .input-box-background { width: 90%; max-width: 688px; height: 200px; min-height: 120px; background: #1B1B1B; box-shadow: 0px 0px 30px rgba(255, 1, 155, 0.40); border-radius: 20px; outline: 1px #FF019B solid; position: relative; }
         .input-field { position: absolute; top: 0; left: 0; width: calc(100% - 40px); height: calc(100% - 40px); background: transparent; border: none; resize: none; padding: 20px; color: white; font-size: 14px; font-family: 'KoreanSerif', 'NanumMyeongjo', serif; font-weight: 600; line-height: 1.7; outline: none; }
         .input-field::placeholder { color: #888; font-weight: 400; }
-        .save-button-link { width: 163px; height: 58px; background: #FF019B; border-radius: 100px; text-decoration: none; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-top: 20px; transition: all 0.2s ease; box-shadow: none; z-index: 1000; }
+        .button-container { display: flex; gap: 15px; margin-top: 20px; justify-content: center; align-items: center; }
+        .save-button-link { width: 163px; height: 58px; background: #FF019B; border-radius: 100px; text-decoration: none; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s ease; box-shadow: none; z-index: 1000; }
+        .save-button-link:hover { transform: scale(1.05); box-shadow: 0px 4px 15px rgba(255, 1, 155, 0.5); }
+        .download-button-link { width: 163px; height: 58px; background: #1B1B1B; border: 2px solid #FF019B; border-radius: 100px; text-decoration: none; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s ease; z-index: 1000; }
+        .download-button-link:hover { transform: scale(1.05); background: #2B2B2B; }
         .save-button-text { color: black; font-size: 28px; font-weight: 600; }
+        .download-button-text { color: #FF019B; font-size: 24px; font-weight: 600; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
         .loading-popup-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 589px; height: 150px; background: #FF019B; border-radius: 100px; z-index: 1001; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease; }
         .loading-text { color: black; font-size: 28px; font-weight: 600; }
@@ -57,7 +62,7 @@
         .divider-bottom { width: var(--bottom-divider-width); left: calc(50% - (var(--bottom-divider-width) / 2)); top: 800px; }
     </style>
 </head>
-<body onload="initializeChat()">
+<body>
 
     <div id="menuToggleWrapper" class="menu-toggle-icon-wrapper" onclick="toggleSidebar()" title="메뉴 토글">
         <div id="menuToggle" class="menu-toggle-icon">
@@ -73,9 +78,14 @@
             <div class="input-box-background">
                 <textarea id="inputField" class="input-field" placeholder="내용을 입력하세요."></textarea>
             </div>
-            <a class="save-button-link" onclick="sendMessage()" title="메시지 전송">
-                <div class="save-button-text">전 송</div>
-            </a>
+            <div class="button-container">
+                <a class="save-button-link" onclick="sendMessage()" title="메시지 전송">
+                    <div class="save-button-text">전 송</div>
+                </a>
+                <a class="download-button-link" onclick="downloadImage()" title="이미지 다운로드">
+                    <div class="download-button-text">다운로드</div>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -105,13 +115,21 @@
         <div class="loading-text">이미지를 생성 중입니다. . .</div>
     </div>
 
-    <script>
+    <script type="module">
+        // Firebase 아바타 생성 로직 import
+        import { generateAvatarImage, downloadAvatarImage, getCurrentUserInfo } from './avatar-logic.js';
+
         const chatHistory = document.getElementById('chatHistory');
         const inputField = document.getElementById('inputField');
         const modalOverlay = document.getElementById('modalOverlay');
         const loadingPopup = document.getElementById('loadingPopup');
         const sidebarContainer = document.getElementById('sidebarContainer');
         let isSidebarOpen = false;
+
+        // 전역 함수로 노출 (HTML onclick에서 사용)
+        window.toggleSidebar = toggleSidebar;
+        window.sendMessage = sendMessage;
+        window.downloadImage = downloadImage;
 
         function toggleSidebar() {
             isSidebarOpen = !isSidebarOpen;
@@ -120,8 +138,16 @@
         }
 
         function initializeChat() {
-            const firstMessage = "안녕하세요! 원하시는 아바타 이미지를 입력해 주세요!";
+            // 사용자 정보 확인
+            const userInfo = getCurrentUserInfo();
+            let greeting = "안녕하세요!";
+            if (userInfo) {
+                greeting = `안녕하세요, ${userInfo.displayName}님!`;
+            }
+
+            const firstMessage = greeting + " 원하시는 아바타 이미지를 입력해 주세요!";
             const secondMessage = "ex) 귀여운 느낌의 아이돌 소녀, 금발 긴 웨이브, 크고 반짝이는 분홍색 눈동자, 밝은 피부톤, 분홍색과 흰색의 귀여운 의상, 아이돌 애니메이션 스타일";
+            
             setTimeout(() => {
                 addMessage(firstMessage, 'system');
                 setTimeout(() => { addMessage(secondMessage, 'system'); }, 1500);
@@ -137,24 +163,100 @@
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const messageText = inputField.value;
-            if (messageText.trim()) {
-                addMessage(messageText, 'user');
-                inputField.value = '';
+            
+            if (!messageText.trim()) {
+                addMessage(getStatusMessage('empty'), 'system');
+                return;
+            }
+
+            // 사용자 메시지 표시
+            addMessage(messageText, 'user');
+            inputField.value = '';
+
+            // 로딩 UI 표시
+            setTimeout(() => {
+                modalOverlay.style.display = 'block';
+                loadingPopup.style.display = 'flex';
+                loadingPopup.style.opacity = '1';
+            }, 500);
+
+            try {
+                // 실제 Firebase Functions 호출
+                console.log('🎨 아바타 이미지 생성 요청:', messageText);
+                const success = await generateAvatarImage(messageText);
+
+                // 로딩 UI 숨기기
+                loadingPopup.style.opacity = '0';
                 setTimeout(() => {
-                    modalOverlay.style.display = 'block';
-                    loadingPopup.style.display = 'flex';
-                    loadingPopup.style.opacity = '1';
-                    setTimeout(() => {
-                        loadingPopup.style.opacity = '0';
-                        modalOverlay.style.display = 'none';
-                        loadingPopup.style.display = 'none';
-                        setTimeout(() => { addMessage('이미지 생성이 완료되었습니다!', 'system'); }, 500);
-                    }, 3000);
-                }, 1000);
+                    modalOverlay.style.display = 'none';
+                    loadingPopup.style.display = 'none';
+                }, 300);
+
+                // 결과 메시지 표시
+                setTimeout(() => {
+                    if (success) {
+                        addMessage('✅ 이미지 생성이 완료되었습니다!', 'system');
+                        addMessage('💡 아래 "다운로드" 버튼을 클릭하여 이미지를 받아보세요!', 'system');
+                    } else {
+                        addMessage('❌ 이미지 생성 중 오류가 발생했습니다. 로그인 상태를 확인해주세요.', 'system');
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error('❌ 아바타 생성 오류:', error);
+                
+                // 로딩 UI 숨기기
+                loadingPopup.style.opacity = '0';
+                setTimeout(() => {
+                    modalOverlay.style.display = 'none';
+                    loadingPopup.style.display = 'none';
+                }, 300);
+
+                // 에러 메시지 표시
+                setTimeout(() => {
+                    addMessage('❌ 이미지 생성 중 오류가 발생했습니다.', 'system');
+                    addMessage(`상세: ${error.message}`, 'system');
+                }, 500);
             }
         }
+
+        // 다운로드 함수
+        async function downloadImage() {
+            try {
+                console.log('📥 이미지 다운로드 시작');
+                addMessage('📥 이미지를 다운로드합니다...', 'system');
+                
+                const success = await downloadAvatarImage();
+                
+                if (success) {
+                    setTimeout(() => {
+                        addMessage('✅ 이미지 다운로드가 완료되었습니다!', 'system');
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        addMessage('❌ 이미지 다운로드 실패. 먼저 이미지를 생성해주세요.', 'system');
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('❌ 다운로드 오류:', error);
+                addMessage('❌ 다운로드 중 오류가 발생했습니다: ' + error.message, 'system');
+            }
+        }
+
+        // Enter 키로 전송
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeChat();
+        });
 
         // VoiceChanger 실행 IPC
         try {
@@ -166,9 +268,14 @@
                     ipcRenderer.send('start-voice-changer');
                 });
             }
-        } catch (_) {}
+        } catch (_) {
+            console.log('Electron IPC not available (browser mode)');
+        }
+
+        console.log('✅ Avatar page initialized');
     </script>
 </body>
 </html>
+
 
 
