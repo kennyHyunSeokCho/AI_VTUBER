@@ -30,7 +30,9 @@
         .sidebar-container.sidebar-open { transform: translateX(0); }
         .sidebar-header { width: 100%; height: 100px; background: black; position: relative; }
         .sidebar-main { width: 100%; height: calc(100% - 100px); background: #FF019B; position: relative; padding-top: 50px; }
-        .menu-link { color: black; font-family: 'Javanese Text'; font-size: 22px; font-weight: 400; text-decoration: none; display: block; position: absolute; cursor: pointer; height: var(--menu-font-height); white-space: nowrap; }
+        .menu-link { color: black; font-family: 'Javanese Text'; font-size: 22px; font-weight: 400; text-decoration: none; display: block; position: absolute; cursor: pointer; height: var(--menu-font-height); white-space: nowrap; z-index: 501; }
+        .menu-link:hover { opacity: 0.8; }
+        .menu-link:active { opacity: 0.6; }
         .divider { height: 1px; outline: 1px black solid; outline-offset: -0.50px; position: absolute; }
         .menu-my { left: var(--menu-offset); top: 53px; }
         .divider-1 { width: calc(var(--menu-box-width) - var(--width-my) - var(--menu-spacer-gap)); right: var(--menu-offset); top: 65.5px; }
@@ -186,8 +188,14 @@
             }
         }
         if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-        if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sidebarWrapper.classList.contains('open')) toggleSidebar(); });
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', (e) => {
+                // 사이드바 내부 링크 클릭은 허용 (오버레이 클릭만 사이드바 닫기)
+                if (e.target.closest('.sidebar-container')) return;
+                toggleSidebar();
+            });
+        }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sidebarContainer.classList.contains('sidebar-open')) toggleSidebar(); });
 
         // Electron IPC: Voice 메뉴 → 음성학습 창 열기
         // VoiceChanger 실행 (별도 페이지 아님)
