@@ -29,7 +29,7 @@ function App() {
     return data
   }
 
-  const sanitize = (val) => val.replace(/[^A-Za-z]/g, '')
+  const sanitize = (val) => val.replace(/[^A-Za-z0-9]/g, '')
 
   const downloadByKey = async (key) => {
     // 한글 주석: presign → 실패 시 백엔드 프록시(download)로 폴백
@@ -60,7 +60,7 @@ function App() {
   const onClickFindIndexes = async () => {
     try {
       const uid = sanitize(indexUserId)
-      if (!uid) throw new Error('사용자 ID는 영어 알파벳만 입력해주세요.')
+      if (!uid) throw new Error('사용자 ID를 입력해주세요')
       const data = await fetchFiles(uid)
       setModelFiles(data)
       // 한글 주석: ZIP으로 묶어 단건 다운로드 (브라우저 자동 다운로드 제한 회피)
@@ -102,6 +102,7 @@ function App() {
     }
   }
 
+
   return (
     <div className="app">
       <div className="container">
@@ -119,7 +120,7 @@ function App() {
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             onBlur={() => setUserId(sanitize(userId))}
-            placeholder="영어 알파벳만 입력해주세요 (특수문자 불가)"
+            placeholder="영어/숫자만 입력 가능"
           />
         </div>
 
@@ -140,7 +141,7 @@ function App() {
               value={indexUserId}
               onChange={(e) => setIndexUserId(e.target.value)}
               onBlur={() => setIndexUserId(sanitize(indexUserId))}
-              placeholder="영어 알파벳만 입력해주세요 (특수문자 불가)"
+              placeholder="영어/숫자만 입력 가능"
             />
             <button className="btn btn-secondary" onClick={onClickFindIndexes} disabled={isDownloading}>
               {isDownloading ? '다운로드 중...' : '찾기'}

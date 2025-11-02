@@ -61,3 +61,6 @@ node_modules/
 
 config.ts
 config.js
+
+# VoiceChanger 폴더 제외 (용량이 큼)
+src/tha4/app/voice_changer/

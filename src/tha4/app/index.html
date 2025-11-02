@@ -14,7 +14,7 @@
             --menu-box-width: 200px;
             --menu-spacer-gap: 15px;
             --menu-font-height: 26px;
-            --width-my: 35px; --width-voice: 75px; --width-avatar: 75px; --width-voicechanger: 150px;
+            --width-my: 35px; --width-voice: 75px; --width-avatar: 75px; --width-live: 50px; --width-voicechanger: 150px;
             --menu-offset: 45.5px;
             --bottom-divider-width: 150px;
             --circle-size: 72px;
@@ -40,6 +40,8 @@
         .divider-3 { width: calc(var(--menu-box-width) - var(--width-avatar) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 155.5px; }
         .menu-voice { left: var(--menu-offset); top: 233px; }
         .divider-2 { width: calc(var(--menu-box-width) - var(--width-voice) - var(--menu-spacer-gap)); right: var(--menu-offset); top: 245.5px; }
+        .menu-live { right: var(--menu-offset); top: 278px; text-align: right; }
+        .divider-5 { width: calc(var(--menu-box-width) - var(--width-live) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 290.5px; }
         .menu-voicechanger { right: var(--menu-offset); top: 323px; text-align: right; font-size: 20px; }
         .divider-4 { width: calc(var(--menu-box-width) - var(--width-voicechanger) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 335.5px; }
         .menu-circle { width: var(--circle-size); height: var(--circle-size); border-radius: 9999px; border: 1px black solid; position: absolute; top: 120px; right: calc(var(--menu-offset) - (var(--circle-size) - var(--width-avatar)) / 2); }
@@ -115,6 +117,92 @@
             border: 0; background: transparent; color: #FF019B; cursor: pointer;
             font-size: 26px; line-height: 36px;
         }
+
+        /* VoiceChanger 로딩 모달 */
+        .vc-loading-overlay {
+            position: fixed; left: 0; top: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: none; /* 기본 숨김 */
+            justify-content: center;
+            align-items: center;
+        }
+        .vc-loading-modal {
+            width: 500px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 3px solid #FF019B;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(255, 1, 155, 0.5);
+            position: relative;
+        }
+        .vc-loading-title {
+            color: #FF019B;
+            font-family: 'NanumMyeongjo', serif;
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .vc-loading-status {
+            color: #e5e5e5;
+            font-family: 'NanumMyeongjo', serif;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 25px;
+            min-height: 24px;
+        }
+        .vc-loading-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .vc-loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FF019B 0%, #d4017e 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        /* 스피너 애니메이션 */
+        .vc-spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            border: 4px solid #2a2a2a;
+            border-top: 4px solid #FF019B;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .vc-loading-details {
+            color: #999;
+            font-family: 'NanumMyeongjo', serif;
+            font-size: 13px;
+            text-align: center;
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .vc-loading-detail-line {
+            margin: 4px 0;
+            opacity: 0.8;
+        }
+        .vc-loading-detail-line.success {
+            color: #9effa1;
+        }
+        .vc-loading-detail-line.error {
+            color: #ff6b6b;
+        }
     </style>
 </head>
 <body>
@@ -134,6 +222,8 @@
             <a id="menuAvatar" class="menu-link menu-avatar" href="avatar.html">Avatar</a>
             <a id="menuVoice" class="menu-link menu-voice" href="voice.html">Voice</a>
             <div id="divider2" class="divider divider-2"></div>
+            <a id="menuLive" class="menu-link menu-live" href="#">Live</a>
+            <div id="divider5" class="divider divider-5"></div>
             <a id="menuVoiceChanger" class="menu-link menu-voicechanger" href="#">VoiceChanger</a>
             <div id="divider4" class="divider divider-4"></div>
             <div id="menuCircle" class="menu-circle"></div>
@@ -171,6 +261,19 @@
         <div class="log-content" id="logContent"></div>
     </div>
 
+    <!-- VoiceChanger 로딩 모달 -->
+    <div id="vcLoadingOverlay" class="vc-loading-overlay">
+        <div class="vc-loading-modal">
+            <div class="vc-loading-title">Realtime VoiceChanger</div>
+            <div class="vc-spinner"></div>
+            <div id="vcLoadingStatus" class="vc-loading-status">초기화 중...</div>
+            <div class="vc-loading-bar-container">
+                <div id="vcLoadingBar" class="vc-loading-bar"></div>
+            </div>
+            <div id="vcLoadingDetails" class="vc-loading-details"></div>
+        </div>
+    </div>
+
     <script>
         // 사이드바 토글
         const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -199,12 +302,166 @@
 
         // Electron IPC: Voice 메뉴 → 음성학습 창 열기
         // VoiceChanger 실행 (별도 페이지 아님)
+        // Live (VTuber 리깅) 실행
         try {
             const { ipcRenderer } = require('electron');
+            
+            // VoiceChanger 로딩 상태 관리
+            let vcLoadingState = {
+                stage: 'init',
+                progress: 0,
+                details: []
+            };
+            let isVoiceChangerOpening = false; // VoiceChanger 실행 중 플래그
+            
+            const vcLoadingOverlay = document.getElementById('vcLoadingOverlay');
+            const vcLoadingStatus = document.getElementById('vcLoadingStatus');
+            const vcLoadingBar = document.getElementById('vcLoadingBar');
+            const vcLoadingDetails = document.getElementById('vcLoadingDetails');
+            
+            function showVCLoading() {
+                vcLoadingOverlay.style.display = 'flex';
+                vcLoadingState = { stage: 'init', progress: 0, details: [] };
+                updateVCLoadingUI();
+            }
+            
+            function hideVCLoading() {
+                vcLoadingOverlay.style.display = 'none';
+            }
+            
+            function addVCDetail(message, type = 'info') {
+                vcLoadingState.details.push({ message, type });
+                if (vcLoadingState.details.length > 10) {
+                    vcLoadingState.details.shift(); // 최대 10개만 유지
+                }
+                updateVCLoadingUI();
+            }
+            
+            function updateVCLoadingUI() {
+                // 상태별 메시지와 진행률
+                const stageInfo = {
+                    'init': { text: '초기화 중...', progress: 10 },
+                    'starting': { text: '서버 시작 중...', progress: 20 },
+                    'downloading': { text: '모델 다운로드 중... (첫 실행 시 시간이 걸릴 수 있습니다)', progress: 40 },
+                    'loading': { text: '모델 로딩 중...', progress: 70 },
+                    'ready': { text: '서버 준비 완료!', progress: 90 },
+                    'opening': { text: '창 열기...', progress: 100 }
+                };
+                
+                const info = stageInfo[vcLoadingState.stage] || stageInfo['init'];
+                vcLoadingStatus.textContent = info.text;
+                vcLoadingBar.style.width = info.progress + '%';
+                
+                // 상세 로그 업데이트
+                vcLoadingDetails.innerHTML = vcLoadingState.details.map(d => 
+                    `<div class="vc-loading-detail-line ${d.type}">${d.message}</div>`
+                ).join('');
+                
+                // 스크롤을 맨 아래로
+                vcLoadingDetails.scrollTop = vcLoadingDetails.scrollHeight;
+            }
+            
+            // VoiceChanger 버튼 클릭
             document.querySelectorAll('.menu-voicechanger').forEach((el) => {
                 el.addEventListener('click', (ev) => {
                     ev.preventDefault();
+                    
+                    // 이미 실행 중이면 무시
+                    if (isVoiceChangerOpening) {
+                        console.log('[VoiceChanger] Already opening, ignoring click...');
+                        return;
+                    }
+                    
+                    isVoiceChangerOpening = true;
+                    showVCLoading();
+                    addVCDetail('VoiceChanger 시작 요청...', 'info');
                     ipcRenderer.send('start-voice-changer');
+                });
+            });
+            
+            // VoiceChanger 로그 수신 (상태 파싱)
+            ipcRenderer.on('process-log', (event, data) => {
+                if (data.source === 'voice-changer') {
+                    const msg = data.message.toLowerCase();
+                    
+                    // 무시할 메시지 (LevelDB, IndexedDB 관련)
+                    const shouldIgnore = msg.includes('leveldb') || 
+                                        msg.includes('indexeddb') ||
+                                        msg.includes('lock: file currently in use') ||
+                                        msg.includes('failed to open');
+                    
+                    if (shouldIgnore) {
+                        return; // 무시
+                    }
+                    
+                    // 로그 메시지 분석하여 단계 판단
+                    if (msg.includes('starting server') || msg.includes('booting')) {
+                        vcLoadingState.stage = 'starting';
+                        addVCDetail('서버 부팅 중...', 'info');
+                    } else if (msg.includes('download') || msg.includes('downloading')) {
+                        vcLoadingState.stage = 'downloading';
+                        addVCDetail('모델 다운로드 중...', 'info');
+                    } else if (msg.includes('loading') || msg.includes('initialize')) {
+                        vcLoadingState.stage = 'loading';
+                        addVCDetail('모델 로딩 중...', 'info');
+                    } else if (msg.includes('ready') || msg.includes('listening') || msg.includes('uvicorn running')) {
+                        vcLoadingState.stage = 'ready';
+                        addVCDetail('서버 준비 완료!', 'success');
+                    } else if (msg.includes('error') || data.level === 'error') {
+                        addVCDetail(data.message.substring(0, 80), 'error');
+                    } else {
+                        addVCDetail(data.message.substring(0, 80), 'info');
+                    }
+                    
+                    updateVCLoadingUI();
+                }
+            });
+            
+            // VoiceChanger 시작 완료
+            ipcRenderer.on('voice-changer-started', () => {
+                vcLoadingState.stage = 'opening';
+                updateVCLoadingUI();
+                addVCDetail('창이 열립니다!', 'success');
+                
+                // 1초 후 로딩 모달 닫기
+                setTimeout(() => {
+                    hideVCLoading();
+                    isVoiceChangerOpening = false; // 플래그 해제
+                }, 1000);
+            });
+            
+            // VoiceChanger 창이 열렸을 때 - 사이드바 닫고 메인 페이지로 복귀
+            ipcRenderer.on('voice-changer-window-opened', () => {
+                console.log('[VoiceChanger] Window opened, closing sidebar and returning to main');
+                
+                // 로딩 모달 닫기
+                hideVCLoading();
+                isVoiceChangerOpening = false; // 플래그 해제
+                
+                // 사이드바가 열려있으면 닫기
+                if (sidebarContainer && sidebarContainer.classList.contains('sidebar-open')) {
+                    toggleSidebar();
+                }
+            });
+            
+            // VoiceChanger 에러
+            ipcRenderer.on('voice-changer-error', (event, errorMsg) => {
+                addVCDetail(`에러: ${errorMsg}`, 'error');
+                vcLoadingState.stage = 'error';
+                updateVCLoadingUI();
+                
+                // 3초 후 자동으로 닫기
+                setTimeout(() => {
+                    hideVCLoading();
+                    isVoiceChangerOpening = false; // 플래그 해제
+                }, 3000);
+            });
+            
+            // Live 버튼 클릭 시 absolute.py 실행
+            document.querySelectorAll('.menu-live').forEach((el) => {
+                el.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ipcRenderer.send('start-vtuber-live');
                 });
             });
         } catch (_) { /* 브라우저 단독 실행 시 무시 */ }

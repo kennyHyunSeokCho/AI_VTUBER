@@ -11,7 +11,7 @@
             --menu-box-width: 200px;
             --menu-spacer-gap: 15px;
             --menu-font-height: 26px;
-            --width-my: 35px; --width-voice: 75px; --width-avatar: 75px; --width-voicechanger: 150px;
+            --width-my: 35px; --width-voice: 75px; --width-avatar: 75px; --width-live: 50px; --width-voicechanger: 150px;
             --menu-offset: 45.5px;
             --bottom-divider-width: 150px;
             --circle-size: 72px;
@@ -53,6 +53,8 @@
         .divider-3 { width: calc(var(--menu-box-width) - var(--width-avatar) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 155.5px; }
         .menu-voice { left: var(--menu-offset); top: 233px; }
         .divider-2 { width: calc(var(--menu-box-width) - var(--width-voice) - var(--menu-spacer-gap)); right: var(--menu-offset); top: 245.5px; }
+        .menu-live { right: var(--menu-offset); top: 278px; text-align: right; }
+        .divider-5 { width: calc(var(--menu-box-width) - var(--width-live) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 290.5px; }
         .menu-voicechanger { right: var(--menu-offset); top: 323px; text-align: right; font-size: 20px; }
         .divider-4 { width: calc(var(--menu-box-width) - var(--width-voicechanger) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 335.5px; }
         .menu-circle { width: var(--circle-size); height: var(--circle-size); border-radius: 9999px; border: 1px black solid; position: absolute; top: 120px; right: calc(var(--menu-offset) - (var(--circle-size) - var(--width-avatar)) / 2); }
@@ -98,8 +100,10 @@
             <div id="menuAvatar" class="menu-link menu-avatar">Avatar</div>
             <a id="menuVoice" class="menu-link menu-voice" href="voice.html">Voice</a>
             <div id="divider2" class="divider divider-2"></div>
+            <a id="menuLive" class="menu-link menu-live" href="#">Live</a>
+            <div id="divider5" class="divider divider-5"></div>
+            <a id="menuVoiceChanger" class="menu-link menu-voicechanger" href="#">VoiceChanger</a>
             <div id="divider4" class="divider divider-4"></div>
-            <div id="menuVoiceChanger" class="menu-link menu-voicechanger">VoiceChanger</div>
             <div id="menuCircle" class="menu-circle"></div>
             <div id="imageBottom" class="image-bottom">
                 <img src="assets/image6.png" alt="Sidebar Bottom Image" onerror="this.onerror=null; this.src='https://placehold.co/200x230/FF019B/FFFFFF?text=Placeholder+Image';"/>
@@ -258,7 +262,7 @@
             initializeChat();
         });
 
-        // VoiceChanger 실행 IPC
+        // VoiceChanger & Live 실행 IPC
         try {
             const { ipcRenderer } = require('electron');
             const vbtn = document.getElementById('menuVoiceChanger');
@@ -266,6 +270,14 @@
                 vbtn.addEventListener('click', (ev) => {
                     ev.preventDefault();
                     ipcRenderer.send('start-voice-changer');
+                });
+            }
+            
+            const livebtn = document.getElementById('menuLive');
+            if (livebtn) {
+                livebtn.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ipcRenderer.send('start-vtuber-live');
                 });
             }
         } catch (_) {

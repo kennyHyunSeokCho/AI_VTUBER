@@ -11,7 +11,7 @@
         :root {
             --sidebar-width: 291px;
             --menu-box-width: 200px; --menu-spacer-gap: 15px; --menu-font-height: 26px;
-            --width-my: 35px; --width-voice: 75px; --width-avatar: 75px; --width-voicechanger: 150px;
+            --width-my: 35px; --width-voice: 75px; --width-avatar: 75px; --width-live: 50px; --width-voicechanger: 150px;
             --menu-offset: 45.5px; --bottom-divider-width: 150px; --circle-size: 72px;
             --toggle-icon-width: 48px; --toggle-icon-height: 28px;
         }
@@ -32,6 +32,8 @@
         .divider-3 { width: calc(var(--menu-box-width) - var(--width-avatar) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 155.5px; }
         .menu-voice { left: var(--menu-offset); top: 233px; }
         .divider-2 { width: calc(var(--menu-box-width) - var(--width-voice) - var(--menu-spacer-gap)); right: var(--menu-offset); top: 245.5px; }
+        .menu-live { right: var(--menu-offset); top: 278px; text-align: right; }
+        .divider-5 { width: calc(var(--menu-box-width) - var(--width-live) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 290.5px; }
         .menu-voicechanger { right: var(--menu-offset); top: 323px; text-align: right; font-size: 20px; }
         .divider-4 { width: calc(var(--menu-box-width) - var(--width-voicechanger) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 335.5px; }
         .avatar-circle-wrapper { width: var(--circle-size); height: var(--circle-size); position: absolute; right: 28px; top: 150px; }
@@ -67,7 +69,9 @@
             <div id="divider3" class="divider divider-3"></div>
             <a class="menu-link menu-voice" href="voice.html">Voice</a>
             <div id="divider2" class="divider divider-2"></div>
-            <a class="menu-link menu-voicechanger" href="#">VoiceChanger</a>
+            <a id="menuLive" class="menu-link menu-live" href="#">Live</a>
+            <div id="divider5" class="divider divider-5"></div>
+            <a id="menuVoiceChanger" class="menu-link menu-voicechanger" href="#">VoiceChanger</a>
             <div id="divider4" class="divider divider-4"></div>
             <div id="imageBottom" class="image-bottom"><img src="assets/image 3.png" alt="아바타 이미지"></div>
             <div id="slogan1" class="slogan-1">Y o u , b u t v i r t u a l !</div>
@@ -85,23 +89,8 @@
         <iframe id="voiceFrame" class="voice-frame" title="Voice Train"></iframe>
     </div>
 
+    <script src="assets/sidebar.js"></script>
     <script>
-        // 사이드바 토글
-        (function() {
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            const sidebarContainer = document.getElementById('sidebarContainer');
-            const sidebarOverlay = document.getElementById('sidebar-overlay');
-            function toggleSidebar() {
-                const isOpening = !sidebarContainer.classList.contains('sidebar-open');
-                sidebarContainer.classList.toggle('sidebar-open');
-                if (isOpening) { sidebarOverlay.style.display = 'block'; setTimeout(() => sidebarOverlay.style.opacity = '1', 10); }
-                else { sidebarOverlay.style.opacity = '0'; setTimeout(() => { sidebarOverlay.style.display = 'none'; }, 300); }
-            }
-            if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-            if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sidebarWrapper.classList.contains('open')) toggleSidebar(); });
-        })();
-
         // 음성 학습(voice_train) URL 준비 → iframe 로드
         (function() {
             try {
@@ -121,13 +110,21 @@
                 ipcRenderer.on('voice-train-error', (event, err) => {
                     if (loading) loading.textContent = '음성 학습 UI 준비 실패. 다시 시도해 주세요.';
                 });
-                // VoiceChanger 실행
+                // VoiceChanger & Live 실행
                 document.querySelectorAll('.menu-voicechanger').forEach((el) => {
                     el.addEventListener('click', (ev) => {
                         ev.preventDefault();
                         ipcRenderer.send('start-voice-changer');
                     });
                 });
+                
+                const livebtn = document.getElementById('menuLive');
+                if (livebtn) {
+                    livebtn.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        ipcRenderer.send('start-vtuber-live');
+                    });
+                }
             } catch (_) {
                 // 브라우저에서 직접 열렸을 때(개발 중) Vite dev 서버에 직접 접근 시도
                 const frame = document.getElementById('voiceFrame');
