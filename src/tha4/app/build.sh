@@ -98,6 +98,19 @@ fi
 echo -e "${MAGENTA}🚀 빌드 시작...${NC}"
 echo ""
 
+# 음성 학습 웹(voice_train) 프로덕션 빌드
+if [ -d "voice_train" ]; then
+    echo -e "${YELLOW}📦 voice_train(웹) 빌드 중...${NC}"
+    pushd voice_train >/dev/null
+    if [ ! -d node_modules ]; then
+        npm install
+    fi
+    npx vite build
+    popd >/dev/null
+    echo -e "${GREEN}✓ voice_train 빌드 완료${NC}"
+    echo ""
+fi
+
 case $PLATFORM in
     mac|macos)
         echo -e "${MAGENTA}🍎 macOS 앱 빌드 중...${NC}"

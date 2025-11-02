@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도전 버튜버! - 로그인</title>
+    <style>
+        @font-face {
+            font-family: 'Javanese Text';
+            src: url('path/to/JavaneseText.ttf') format('truetype');
+        }
+
+        /* 기본 마진 제거 */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        :root { --sidebar-width: 291px; }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            background: #FF019B;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+        }
+
+        #sidebar-toggle { width: 48px; height: 28px; position: absolute; right: 115px; top: 40px; display: block; cursor: pointer; z-index: 101; }
+        .image-icon-top { width: 100%; height: 100%; display: block; }
+
+        .image-main { width: 1217px; height: 455px; position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); }
+
+        #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 99; display: none; opacity: 0; transition: opacity 0.3s; }
+
+        #sidebar-wrapper { position: fixed; top: 0; right: 0; width: var(--sidebar-width); height: 100vh; z-index: 100; transform: translateX(100%); transition: transform 0.3s ease-in-out; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3); overflow-x: hidden; }
+        #sidebar-wrapper.open { transform: translateX(0); }
+        .sidebar-header { width: 100%; height: 100px; position: absolute; top: 0; left: 0; background: #FF019B; }
+        .sidebar-main { width: 100%; height: calc(100% - 100px); position: absolute; top: 100px; left: 0; background: black; overflow-y: hidden; overflow-x: hidden; }
+
+        .sidebar-main .menu-login { width: 55px; height: 23px; position: absolute; left: 41px; top: 51px; text-align: center; color: #FF019B; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; text-decoration: none; display: block; }
+        .sidebar-main .menu-avatar { width: 82px; height: 38px; position: absolute; left: 187px; top: 137px; text-align: center; color: #FF019B; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; text-decoration: none; display: block; }
+        .sidebar-main .menu-voice { width: 82px; height: 38px; position: absolute; left: 29px; top: 242px; text-align: center; color: #FF019B; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; text-decoration: none; display: block; cursor: pointer; }
+        .sidebar-main .menu-server { width: 82px; height: 38px; position: absolute; left: 187px; top: 337px; text-align: center; color: #FF019B; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; text-decoration: none; display: block; }
+        .sidebar-main .divider-1 { width: 146.52px; height: 0.51px; position: absolute; left: 110.98px; top: 71.24px; outline: 1px #FF019B solid; outline-offset: -0.50px; }
+        .sidebar-main .divider-2 { width: 146.52px; height: 0.51px; position: absolute; left: 110.98px; top: 263.24px; outline: 1px #FF019B solid; outline-offset: -0.50px; }
+        .sidebar-main .divider-3 { width: 135px; height: 1px; position: absolute; left: 49px; top: 159px; outline: 1px #FF019B solid; outline-offset: -0.50px; }
+        .sidebar-main .divider-4 { width: 135px; height: 1px; position: absolute; left: 49px; top: 360px; outline: 1px #FF019B solid; outline-offset: -0.50px; }
+        .sidebar-main .login-circle-wrapper { width: 72px; height: 72px; position: absolute; right: 188px; top: 36px; }
+        .sidebar-main .slogan-1 { width: 100%; height: 25px; position: absolute; left: 0px; bottom: 75px; text-align: center; color: #FF019B; font-size: 13px; font-family: 'Javanese Text'; font-weight: 400; letter-spacing: 0.2em; }
+        .sidebar-main .slogan-2 { width: 100%; height: 25px; position: absolute; left: 0px; bottom: 40px; text-align: center; color: #FF019B; font-size: 10px; font-family: 'Javanese Text'; font-weight: 400; letter-spacing: 0.2em; }
+        .sidebar-main .image-bottom { width: 245px; height: 282px; position: absolute; left: 24px; bottom: 140px; }
+
+        .login-center-wrapper { position: absolute; bottom: -80px; left: 50%; width: 550px; height: 350px; transform: translateX(-50%); }
+        .image-login-button-link { width: 150px; height: 150px; position: absolute; left: 366px; top: 0px; display: block; }
+        .image-login-button { width: 100%; height: 100%; }
+        .text-id { width: 37px; height: 24px; position: absolute; left: 27px; top: 13px; text-align: center; color: black; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; z-index: 10; }
+        .box-input-id { width: 357px; height: 67px; position: absolute; left: 0px; top: 0px; border-radius: 30px; border: 2px black solid; background: #FF019B; }
+        .text-password { width: 160px; height: 24px; position: absolute; left: 13px; top: 99px; text-align: center; color: black; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; z-index: 10; }
+        .box-input-password { width: 357px; height: 67px; position: absolute; left: 0px; top: 86px; border-radius: 30px; border: 2px black solid; background: #FF019B; }
+        .login-data-input { width: 357px; height: 67px; position: absolute; border: none; background: transparent; border-radius: 30px; padding: 0 30px; box-sizing: border-box; font-size: 22px; font-family: 'Javanese Text'; font-weight: 400; color: black; text-align: left; line-height: 67px; outline: none; padding-left: 90px; z-index: 11; }
+        .text-i { width: 249px; height: 49px; position: absolute; left: 81px; top: 190px; text-align: center; color: black; font-size: 17px; font-family: 'Assistant'; font-weight: 400; }
+        .text-find-pw { width: 249px; height: 49px; position: absolute; left: 143px; top: 190px; text-align: center; color: black; font-size: 17px; font-family: 'Assistant'; font-weight: 400; }
+        .text-signup { width: 249px; height: 49px; position: absolute; left: 32px; top: 190px; text-align: center; color: black; font-size: 17px; font-family: 'Assistant'; font-weight: 400; }
+    </style>
+</head>
+<body>
+    
+
+    <div class="container">
+        <img class="image-main" src="assets/image 2.png" alt="메인 디자인">
+    </div>
+    
+
+    <div class="login-center-wrapper">
+        <div class="text-id">ID</div>
+        <div class="box-input-id"></div>
+        <input id="loginIdInput" type="text" class="login-data-input" style="left: 0px; top: 2px;" placeholder="">
+        <div class="text-password">PASSWARD</div>
+        <div class="box-input-password"></div>
+        <input id="loginPwInput" type="password" class="login-data-input" style="left: 0px; top: 88px; padding-left: 180px;" placeholder="">
+        <a class="image-login-button-link" href="index.html" title="로그인 후 메인으로 이동">
+            <img class="image-login-button" src="assets/image4.png" alt="로그인 버튼">
+        </a>
+        <div class="text-signup">회원가입 &nbsp; </div>
+        <div class="text-i">I</div>
+        <div class="text-find-pw">비밀번호 찾기</div>
+    </div>
+
+    <script>
+        // 로그인 버튼 클릭 시 ID를 저장하여 메인에서 환영 문구에 표시
+        (function() {
+            const loginBtn = document.querySelector('.image-login-button-link');
+            const idInput = document.getElementById('loginIdInput');
+            if (loginBtn && idInput) {
+                loginBtn.addEventListener('click', () => {
+                    try {
+                        const name = (idInput.value || '').trim() || '게스트';
+                        localStorage.setItem('vtuber_user_name', name);
+                    } catch (_) {}
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
+
+
+

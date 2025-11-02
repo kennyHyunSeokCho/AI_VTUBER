@@ -1,0 +1,99 @@
+.file-uploader {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.drop-zone {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #222;
+  border: 2px dashed #3a3a3a;
+  border-radius: 8px;
+  color: #cfcfcf;
+  cursor: pointer;
+  position: relative;
+}
+
+.drop-zone.dragging {
+  background: #242424;
+  border-color: #6a6a6a;
+}
+
+.big-copy {
+  pointer-events: none;
+}
+
+.big-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.big-title {
+  font-size: 16px;
+}
+
+.big-sep {
+  color: #8a8a8a;
+  margin: 4px 0;
+}
+
+.big-action {
+  font-size: 14px;
+  color: #eaeaea;
+}
+
+.selected-files {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+}
+
+.file-count {
+  text-align: left;
+  font-size: 12px;
+  color: #bdbdbd;
+  margin-bottom: 6px;
+}
+
+.file-list-preview {
+  max-height: 100px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.file-item-preview {
+  display: flex;
+  justify-content: space-between;
+  background: #151515;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.file-name-preview { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-size { color: #9a9a9a; margin-left: 10px; }
+
+.upload-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn { padding: 8px 14px; border-radius: 8px; border: 1px solid #2a2a2a; cursor: pointer; }
+.btn-upload-file { background: #2d6cdf; color: #fff; border-color: #2d6cdf; }
+.btn-upload-file:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-clear { background: #202020; color: #ddd; }
+.btn-ghost { background: transparent; color: #eaeaea; border-color: #3a3a3a; }
+.btn-ghost:hover { background: #1f1f1f; }
+.audio-select-inline { flex: 1; background: #101010; color: #eaeaea; border: 1px solid #303030; border-radius: 8px; padding: 8px 10px; margin-left: auto; }
+

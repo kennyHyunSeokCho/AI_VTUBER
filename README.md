@@ -1,253 +1,101 @@
-python src/tha4/app/absolute.py
+## 개요
+VTuber 제어용 Electron 앱과 음성 학습 웹 UI, FastAPI 백엔드가 함께 있는 모노레포입니다. Electron 메인 화면에서 음성 학습을 열면 백엔드와 프론트엔드가 자동으로 기동됩니다.
 
-이걸 하면 잘됩니다...
+## 폴더 구조
+```
+backend/                             FastAPI 백엔드 (루트 PYTHONPATH 기준)
+src/
+  tha4/app/                          Electron 앱 루트
+    index.html, renderer.js, main.js
+    build.sh                         앱 및 웹 빌드 스크립트
+    voice_train/                     음성 학습 웹 프론트(Vite)
+      src/                           React 컴포넌트
+      vite.config.js                 /api → http://localhost:8000 프록시
+  config.py, s3_utils.py, runpod_client.py  백엔드에서 사용하는 모듈
+```
 
+## 사전 요구사항
+- macOS 또는 Linux, zsh/bash
+- Python 3.10+ (.venv 사용 권장)
+- Node.js 18+ 및 npm
 
-일단 모델 뽑는건 
-python src/tha4/app/fmpm.py
-____> fmpm.py 는 쿠다 설치가 되어있어야함.
+## 설치
+```
+cd /Users/johyeonseog/runpod_
+python3 -m venv .venv
+./.venv/bin/python -m pip install --upgrade pip
+# 필요 시 백엔드 의존성 설치
+pip install -r requirements.txt
 
+# 음성 학습 웹 의존성 (최초 1회)
+cd src/tha4/app/voice_train
+npm install
+```
 
+## 환경변수 (.env)
+루트에 .env를 둡니다: /Users/johyeonseog/runpod_/.env
+```
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_DEFAULT_REGION=ap-northeast-2
 
+S3_BUCKET_NAME=...
+S3_DATA_PREFIX=voice_blend/uploads/
+S3_MODELS_PREFIX=voice_blend/models/
 
-src/tha4/app/./build.sh
+RUNPOD_API_KEY=...
+RUNPOD_ENDPOINT_ID=...
 
+ARTIFACT_EXTS=.pth,.index
+```
 
-npm build
-
-
+## 실행 방법
+### 1) Electron에서 한 번에 실행 (권장)
+```
+cd /Users/johyeonseog/runpod_/src/tha4/app
 npm start 
+```
+- 메인 화면의 "음성 학습" 버튼을 누르면 백엔드(uvicorn) → Vite dev 서버 순으로 자동 기동됩니다.
+- 하단 로그 패널에서 backend / vite / overlay 로그를 바로 볼 수 있습니다.
 
-일단 맥 가능
+### 2) 프론트와 백엔드를 따로 실행
+백엔드
+```
+cd /Users/johyeonseog/runpod_
+export PYTHONPATH=$(pwd)
+./.venv/bin/uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+프론트(음성 학습)
+```
+cd /Users/johyeonseog/runpod_/src/tha4/app/voice_train
+npm run dev   # http://localhost:3000
+```
 
+### 3) 프로덕션 빌드
+```
+cd /Users/johyeonseog/runpod_/src/tha4/app
+./build.sh      # voice_train도 함께 빌드됨
+npm start       # dist/index.html 사용하여 dev 서버 없이 실행
+```
+개발 서버로 강제 실행하려면 src/tha4/app/voice_train/dist 폴더를 삭제하세요.
 
-# packages in environment at /home/moomininmoon/anaconda3/envs/anime-env:
-#
-# Name                       Version                   Build               Channel
-_libgcc_mutex                0.1                       main
-_openmp_mutex                5.1                       1_gnu
-absl-py                      2.3.1                     pypi_0              pypi
-aiofiles                     24.1.0                    pypi_0              pypi
-alsa-lib                     1.2.3.2                   h166bdaf_0          conda-forge
-annotated-types              0.7.0                     pypi_0              pypi
-antlr4-python3-runtime       4.9.3                     pypi_0              pypi
-anyio                        4.9.0                     pypi_0              pypi
-asitop                       0.0.24                    pypi_0              pypi
-at-spi2-atk                  2.38.0                    h0630a04_3          conda-forge
-at-spi2-core                 2.40.3                    h0630a04_0          conda-forge
-atk-1.0                      2.36.0                    h3371d22_4          conda-forge
-attrs                        25.3.0                    pypi_0              pypi
-blessed                      1.21.0                    pypi_0              pypi
-brotli-python                1.1.0                     py310hf71b8c6_3     conda-forge
-bzip2                        1.0.8                     h4bc722e_7          conda-forge
-ca-certificates              2025.7.14                 hbd8a1cb_0          conda-forge
-cairo                        1.16.0                    ha00ac49_1009       conda-forge
-certifi                      2025.7.14                 pyhd8ed1ab_0        conda-forge
-cffi                         1.17.1                    py310h8deb56e_0     conda-forge
-charset-normalizer           3.4.0                     pyhd8ed1ab_0        conda-forge
-click                        8.2.1                     pypi_0              pypi
-contourpy                    1.3.2                     pypi_0              pypi
-cycler                       0.12.1                    pypi_0              pypi
-dashing                      0.1.0                     pypi_0              pypi
-dbus                         1.13.6                    h48d8840_2          conda-forge
-einops                       0.6.1                     pypi_0              pypi
-epoxy                        1.5.10                    h166bdaf_1          conda-forge
-exceptiongroup               1.3.0                     pypi_0              pypi
-expat                        2.4.8                     h27087fc_0          conda-forge
-fastapi                      0.116.1                   pypi_0              pypi
-ffmpy                        0.6.1                     pypi_0              pypi
-filelock                     3.18.0                    pypi_0              pypi
-flatbuffers                  25.2.10                   pypi_0              pypi
-font-ttf-dejavu-sans-mono    2.37                      hab24e00_0          conda-forge
-font-ttf-inconsolata         3.000                     h77eed37_0          conda-forge
-font-ttf-source-code-pro     2.038                     h77eed37_0          conda-forge
-font-ttf-ubuntu              0.83                      h77eed37_3          conda-forge
-fontconfig                   2.14.0                    h8e229c2_0          conda-forge
-fonts-conda-ecosystem        1                         0                   conda-forge
-fonts-conda-forge            1                         0                   conda-forge
-fonttools                    4.59.0                    pypi_0              pypi
-freetype                     2.10.4                    h0708190_1          conda-forge
-fribidi                      1.0.10                    h36c2ea0_0          conda-forge
-fsspec                       2025.7.0                  pypi_0              pypi
-gdk-pixbuf                   2.42.6                    h04a7f16_0          conda-forge
-gettext                      0.19.8.1                  h73d1719_1008       conda-forge
-glcontext                    3.0.0                     pypi_0              pypi
-glib                         2.80.2                    hf974151_0          conda-forge
-glib-tools                   2.80.2                    hb6ce0ca_0          conda-forge
-gradio                       5.39.0                    pypi_0              pypi
-gradio-client                1.11.0                    pypi_0              pypi
-graphite2                    1.3.13                    h58526e2_1001       conda-forge
-groovy                       0.1.2                     pypi_0              pypi
-grpcio                       1.74.0                    pypi_0              pypi
-gst-plugins-base             1.18.5                    hf529b03_0          conda-forge
-gstreamer                    1.18.5                    h76c114f_0          conda-forge
-gtk2                         2.24.33                   h539f30e_1          conda-forge
-gtk3                         3.24.29                   h8c9bf5d_3          conda-forge
-h11                          0.16.0                    pypi_0              pypi
-h2                           4.1.0                     pyhd8ed1ab_0        conda-forge
-harfbuzz                     3.4.0                     hb4a5f5f_0          conda-forge
-hf-xet                       1.1.5                     pypi_0              pypi
-hicolor-icon-theme           0.17                      ha770c72_2          conda-forge
-hpack                        4.0.0                     pyh9f0ad1d_0        conda-forge
-httpcore                     1.0.9                     pypi_0              pypi
-httpx                        0.28.1                    pypi_0              pypi
-huggingface-hub              0.34.3                    pypi_0              pypi
-hyperframe                   6.0.1                     pyhd8ed1ab_0        conda-forge
-icu                          69.1                      h9c3ff4c_0          conda-forge
-idna                         3.10                      pyhd8ed1ab_0        conda-forge
-jax                          0.6.2                     pypi_0              pypi
-jaxlib                       0.6.2                     pypi_0              pypi
-jbig                         2.1                       h7f98852_2003       conda-forge
-jinja2                       3.1.6                     pypi_0              pypi
-jpeg                         9e                        h166bdaf_1          conda-forge
-keyutils                     1.6.1                     h166bdaf_0          conda-forge
-kiwisolver                   1.4.8                     pypi_0              pypi
-krb5                         1.19.3                    h08a2579_0          conda-forge
-ld_impl_linux-64             2.40                      h12ee557_0
-lerc                         2.2.1                     h9c3ff4c_0          conda-forge
-libcups                      2.3.3                     hf5a7f15_0          conda-forge
-libdeflate                   1.7                       h7f98852_5          conda-forge
-libedit                      3.1.20191231              he28a2e2_2          conda-forge
-libffi                       3.4.4                     h6a678d5_1
-libgcc                       15.1.0                    h767d61c_3          conda-forge
-libgcc-ng                    15.1.0                    h69a702a_3          conda-forge
-libgirepository              1.70.0                    hb520f89_0          conda-forge
-libglib                      2.80.2                    hf974151_0          conda-forge
-libglu                       9.0.0                     he1b5a44_1001       conda-forge
-libgomp                      15.1.0                    h767d61c_3          conda-forge
-libiconv                     1.17                      h166bdaf_0          conda-forge
-libnsl                       2.0.1                     hb9d3cd8_1          conda-forge
-libogg                       1.3.4                     h7f98852_1          conda-forge
-libopus                      1.3.1                     h7f98852_1          conda-forge
-libpng                       1.6.37                    h21135ba_2          conda-forge
-libsqlite                    3.46.0                    hde9e2c9_0          conda-forge
-libstdcxx                    15.1.0                    h8f9b012_3          conda-forge
-libstdcxx-ng                 11.2.0                    h1234567_1
-libtiff                      4.3.0                     hf544144_1          conda-forge
-libuuid                      2.38.1                    h0b41bf4_0          conda-forge
-libvorbis                    1.3.7                     h9c3ff4c_0          conda-forge
-libwebp-base                 1.2.2                     h7f98852_1          conda-forge
-libxcb                       1.17.0                    h9b100fa_0
-libxcrypt                    4.4.36                    hd590300_1          conda-forge
-libxml2                      2.9.14                    haae042b_4          conda-forge
-libzlib                      1.2.13                    h4ab18f5_6          conda-forge
-lz4-c                        1.9.3                     h9c3ff4c_1          conda-forge
-markdown                     3.8.2                     pypi_0              pypi
-markdown-it-py               3.0.0                     pypi_0              pypi
-markupsafe                   3.0.2                     pypi_0              pypi
-matplotlib                   3.10.3                    pypi_0              pypi
-mdurl                        0.1.2                     pypi_0              pypi
-mediapipe                    0.10.21                   pypi_0              pypi
-ml-dtypes                    0.5.3                     pypi_0              pypi
-moderngl                     5.12.0                    pypi_0              pypi
-mpmath                       1.3.0                     pypi_0              pypi
-ncurses                      6.5                       h2d0b736_3          conda-forge
-networkx                     3.4.2                     pypi_0              pypi
-numpy                        1.26.4                    pypi_0              pypi
-numpy-quaternion             2022.4.4                  pypi_0              pypi
-nvidia-cublas-cu11           11.10.3.66                pypi_0              pypi
-nvidia-cublas-cu12           12.1.3.1                  pypi_0              pypi
-nvidia-cuda-cupti-cu12       12.1.105                  pypi_0              pypi
-nvidia-cuda-nvrtc-cu11       11.7.99                   pypi_0              pypi
-nvidia-cuda-nvrtc-cu12       12.1.105                  pypi_0              pypi
-nvidia-cuda-runtime-cu11     11.7.99                   pypi_0              pypi
-nvidia-cuda-runtime-cu12     12.1.105                  pypi_0              pypi
-nvidia-cudnn-cu11            8.5.0.96                  pypi_0              pypi
-nvidia-cudnn-cu12            9.1.0.70                  pypi_0              pypi
-nvidia-cufft-cu12            11.0.2.54                 pypi_0              pypi
-nvidia-curand-cu12           10.3.2.106                pypi_0              pypi
-nvidia-cusolver-cu12         11.4.5.107                pypi_0              pypi
-nvidia-cusparse-cu12         12.1.0.106                pypi_0              pypi
-nvidia-cusparselt-cu12       0.6.2                     pypi_0              pypi
-nvidia-nccl-cu12             2.21.5                    pypi_0              pypi
-nvidia-nvjitlink-cu12        12.1.105                  pypi_0              pypi
-nvidia-nvtx-cu12             12.1.105                  pypi_0              pypi
-omegaconf                    2.3.0                     pypi_0              pypi
-opencv-contrib-python        4.11.0.86                 pypi_0              pypi
-opencv-python                4.11.0.86                 pypi_0              pypi
-openssl                      3.5.1                     h7b32b05_0          conda-forge
-opt-einsum                   3.4.0                     pypi_0              pypi
-orjson                       3.11.1                    pypi_0              pypi
-packaging                    25.0                      pypi_0              pypi
-pandas                       2.3.1                     pypi_0              pypi
-pango                        1.50.5                    h4dcc4a0_1          conda-forge
-pathlib2                     2.3.7.post1               py310hff52083_4     conda-forge
-pcre                         8.45                      h9c3ff4c_0          conda-forge
-pcre2                        10.43                     hcad00b1_0          conda-forge
-pillow                       9.5.0                     pypi_0              pypi
-pip                          25.1.1                    pyh8b19718_0        conda-forge
-pixman                       0.40.0                    h36c2ea0_0          conda-forge
-protobuf                     4.25.8                    pypi_0              pypi
-psutil                       7.0.0                     pypi_0              pypi
-pthread-stubs                0.3                       h0ce48e5_1
-pycairo                      1.25.0                    py310hda9f760_1     conda-forge
-pycparser                    2.22                      pyhd8ed1ab_0        conda-forge
-pydantic                     2.11.7                    pypi_0              pypi
-pydantic-core                2.33.2                    pypi_0              pypi
-pydub                        0.25.1                    pypi_0              pypi
-pygments                     2.19.2                    pypi_0              pypi
-pygobject                    3.46.0                    py310h30b043a_1     conda-forge
-pyopengl                     3.1.10                    pypi_0              pypi
-pyparsing                    3.2.3                     pypi_0              pypi
-pypubsub                     4.0.3                     pyhd8ed1ab_1        conda-forge
-pysocks                      1.7.1                     pyha2e5f31_6        conda-forge
-python                       3.10.14                   hd12c33a_0_cpython  conda-forge
-python-dateutil              2.9.0.post0               pypi_0              pypi
-python-multipart             0.0.20                    pypi_0              pypi
-python_abi                   3.10                      8_cp310             conda-forge
-pytorch-triton               3.1.0+cf34004b8a          pypi_0              pypi
-pytz                         2025.2                    pypi_0              pypi
-pyyaml                       6.0.2                     pypi_0              pypi
-readline                     8.2                       h5eee18b_0
-requests                     2.32.3                    pyhd8ed1ab_0        conda-forge
-rich                         14.1.0                    pypi_0              pypi
-ruff                         0.12.7                    pypi_0              pypi
-safehttpx                    0.1.6                     pypi_0              pypi
-scipy                        1.15.3                    pypi_0              pypi
-semantic-version             2.10.0                    pypi_0              pypi
-sentencepiece                0.2.0                     pypi_0              pypi
-setuptools                   80.9.0                    pyhff2d567_0        conda-forge
-shellingham                  1.5.4                     pypi_0              pypi
-six                          1.16.0                    pyh6c4a22f_0        conda-forge
-sniffio                      1.3.1                     pypi_0              pypi
-sounddevice                  0.5.2                     pypi_0              pypi
-sqlite                       3.45.3                    h5eee18b_0
-starlette                    0.47.2                    pypi_0              pypi
-sympy                        1.13.1                    pypi_0              pypi
-talking-head-anime-4-demo    0.1.0                     pypi_0              pypi
-tensorboard                  2.20.0                    pypi_0              pypi
-tensorboard-data-server      0.7.2                     pypi_0              pypi
-tk                           8.6.14                    h993c535_1
-tomlkit                      0.13.3                    pypi_0              pypi
-torch                        2.6.0.dev20241112+cu121   pypi_0              pypi
-torchao                      0.12.0                    pypi_0              pypi
-torchaudio                   2.5.0.dev20241112+cu121   pypi_0              pypi
-torchvision                  0.20.0.dev20241112+cu121  pypi_0              pypi
-tqdm                         4.67.1                    pypi_0              pypi
-typer                        0.16.0                    pypi_0              pypi
-typing-extensions            4.14.1                    pypi_0              pypi
-typing-inspection            0.4.1                     pypi_0              pypi
-tzdata                       2025.2                    pypi_0              pypi
-urllib3                      2.2.3                     pyhd8ed1ab_0        conda-forge
-uvicorn                      0.35.0                    pypi_0              pypi
-wcwidth                      0.2.13                    pypi_0              pypi
-websockets                   15.0.1                    pypi_0              pypi
-werkzeug                     3.1.3                     pypi_0              pypi
-wheel                        0.45.1                    pyhd8ed1ab_1        conda-forge
-wxpython                     4.1.1                     py310h8b4016e_4     conda-forge
-xorg-libice                  1.0.10                    h7f98852_0          conda-forge
-xorg-libsm                   1.2.3                     hd9c2040_1000       conda-forge
-xorg-libx11                  1.8.12                    h9b100fa_1
-xorg-libxau                  1.0.12                    h9b100fa_0
-xorg-libxdmcp                1.1.5                     h9b100fa_0
-xorg-libxext                 1.3.6                     h9b100fa_0
-xorg-libxfixes               6.0.1                     h9b100fa_0
-xorg-libxi                   1.8.2                     h9b100fa_0
-xorg-libxrender              0.9.12                    h9b100fa_0
-xorg-libxtst                 1.2.5                     h9b100fa_3
-xorg-xorgproto               2024.1                    h5eee18b_1
-xz                           5.6.4                     h5eee18b_1
-zlib                         1.2.13                    h4ab18f5_6          conda-forge
-zstandard                    0.23.0                    py310ha75aee5_2     conda-forge
-zstd                         1.5.0                     ha95c52a_0          conda-forge
+## API 요약 (백엔드)
+- GET /                헬스체크
+- GET /health          S3 연결 확인
+- POST /upload         단일 파일 업로드 (mp3, m4a, wav, webm)
+- POST /upload-multiple 다중 파일 업로드 (mp3, m4a, wav)
+- POST /train          Runpod 학습 제출 및 옵션 대기
+- GET /models/indexes  사용자별 모델 index 조회
+- POST /blend/local    두 개의 .pth를 로컬에서 블렌딩 후 다운로드 링크 반환
+
+## 트러블슈팅
+- 8000 포트 충돌: 기존 uvicorn 프로세스 종료 후 재시도하거나 포트 변경
+- 3000 포트 충돌: vite가 다른 포트를 선택할 수 있음. 고정하려면 vite.config.js의 server.port를 3000으로 유지
+- 권한 문제로 vite 실행 실패: Electron은 node로 vite.js를 직접 실행하도록 구성됨
+- S3 오류: .env 자격증명과 버킷 이름을 확인
+
+## 주요 엔트리
+- Electron 메인: src/tha4/app/main.js
+- 렌더러(UI): src/tha4/app/index.html, renderer.js
+- 음성 학습 웹: src/tha4/app/voice_train/src
 

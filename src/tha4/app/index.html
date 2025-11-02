@@ -1,35 +1,215 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>도전! 버튜버</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>도전! 버튜버 - 메인</title>
+    <style>
+        @font-face { font-family: 'NanumMyeongjo'; src: url('path/to/NanumMyeongjo.ttf') format('truetype'); }
+        @font-face { font-family: 'Javanese Text'; src: url('path/to/JavaneseText.ttf') format('truetype'); }
+        body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; }
+        :root {
+            --sidebar-width: 291px;
+            /* avatar 사이드바 스타일 변수 */
+            --menu-box-width: 200px;
+            --menu-spacer-gap: 15px;
+            --menu-font-height: 26px;
+            --width-my: 35px; --width-voice: 75px; --width-avatar: 75px; --width-voicechanger: 150px;
+            --menu-offset: 45.5px;
+            --bottom-divider-width: 150px;
+            --circle-size: 72px;
+            --toggle-icon-width: 48px; --toggle-icon-height: 28px;
+        }
+        .container { width: 100vw; height: 100vh; background: #FF019B; position: fixed; top: 0; left: 0; overflow: hidden; }
+        #sidebar-toggle { width: 48px; height: 28px; position: absolute; right: 115px; top: 40px; display: block; cursor: pointer; z-index: 101; }
+        .image-icon-top { width: 100%; height: 100%; display: block; }
+        /* 메인 중앙 이미지 제거 (MY 스타일 사용) */
+        #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 99; display: none; opacity: 0; transition: opacity 0.3s; }
+        /* avatar 스타일 사이드바 */
+        .sidebar-container { position: fixed; top: 0; right: 0; width: 291px; height: 100%; z-index: 500; overflow: hidden; transition: transform 0.4s ease-in-out; transform: translateX(291px); }
+        .sidebar-container.sidebar-open { transform: translateX(0); }
+        .sidebar-header { width: 100%; height: 100px; background: black; position: relative; }
+        .sidebar-main { width: 100%; height: calc(100% - 100px); background: #FF019B; position: relative; padding-top: 50px; }
+        .menu-link { color: black; font-family: 'Javanese Text'; font-size: 22px; font-weight: 400; text-decoration: none; display: block; position: absolute; cursor: pointer; height: var(--menu-font-height); white-space: nowrap; }
+        .divider { height: 1px; outline: 1px black solid; outline-offset: -0.50px; position: absolute; }
+        .menu-my { left: var(--menu-offset); top: 53px; }
+        .divider-1 { width: calc(var(--menu-box-width) - var(--width-my) - var(--menu-spacer-gap)); right: var(--menu-offset); top: 65.5px; }
+        .menu-avatar { right: var(--menu-offset); top: 143px; text-align: right; }
+        .divider-3 { width: calc(var(--menu-box-width) - var(--width-avatar) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 155.5px; }
+        .menu-voice { left: var(--menu-offset); top: 233px; }
+        .divider-2 { width: calc(var(--menu-box-width) - var(--width-voice) - var(--menu-spacer-gap)); right: var(--menu-offset); top: 245.5px; }
+        .menu-voicechanger { right: var(--menu-offset); top: 323px; text-align: right; font-size: 20px; }
+        .divider-4 { width: calc(var(--menu-box-width) - var(--width-voicechanger) - var(--menu-spacer-gap)); left: var(--menu-offset); top: 335.5px; }
+        .menu-circle { width: var(--circle-size); height: var(--circle-size); border-radius: 9999px; border: 1px black solid; position: absolute; top: 120px; right: calc(var(--menu-offset) - (var(--circle-size) - var(--width-avatar)) / 2); }
+        .image-bottom { width: var(--menu-box-width); height: 230px; position: absolute; left: var(--menu-offset); top: 410px; }
+        .slogan-1 { width: 100%; position: absolute; top: 670px; text-align: center; color: black; font-size: 13px; font-family: 'Javanese Text'; font-weight: 400; letter-spacing: 0.2em; }
+        .slogan-2 { width: 100%; position: absolute; top: 705px; text-align: center; color: black; font-size: 10px; font-family: 'Javanese Text'; font-weight: 400; letter-spacing: 0.2em; }
+
+        /* 로그 패널 - 메인 우하단 고정 */
+        .status-panel { position: absolute; right: 24px; bottom: 260px; background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 8px; color: #fff; font-family: 'NanumMyeongjo', serif; }
+        .log-panel { position: absolute; right: 24px; bottom: 24px; width: 420px; height: 210px; background: rgba(0,0,0,0.75); border: 1px solid #FF019B; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+        .log-header { padding: 8px 12px; background: #1B1B1B; color: #FF019B; font-weight: 700; font-family: 'NanumMyeongjo', serif; }
+        .log-content { flex: 1; padding: 8px 12px; color: #fff; font-family: 'NanumMyeongjo', serif; font-size: 13px; overflow-y: auto; }
+        .log-entry { margin-bottom: 4px; }
+        .log-entry.error { color: #ff6b6b; }
+        .log-entry.success { color: #9effa1; }
+
+        /* 환영 영역 */
+        .text-welcome { position: absolute; right: 395px; top: 244px; color: black; font-size: 24px; font-family: 'NanumMyeongjo'; font-weight: 600; z-index: 120; }
+        .text-symbol { position: absolute; right: 458px; top: 217px; color: black; font-size: 64px; font-family: 'NanumMyeongjo'; font-weight: 600; z-index: 120; }
+        .text-username { position: absolute; right: 560px; top: 288px; color: black; font-size: 40px; font-family: 'NanumMyeongjo'; font-weight: 600; text-align: right; z-index: 120; }
+        .text-suffix { position: absolute; right: 508px; top: 288px; color: black; font-size: 40px; font-family: 'NanumMyeongjo'; font-weight: 600; text-align: right; z-index: 120; }
+
+        /* MY 스타일: 데코 원과 중앙 구분선 */
+        .circle-large-top-right { width: 260px; height: 260px; position: absolute; right: 56px; top: 645px; background: black; border-radius: 9999px; }
+        .circle-medium-right-1 { width: 120px; height: 120px; position: absolute; right: 233px; top: 283px; background: black; border-radius: 9999px; }
+        .circle-small-right-2 { width: 55px; height: 55px; position: absolute; right: 196px; top: 150px; background: black; border-radius: 9999px; }
+        .circle-small-bottom-left { width: 69px; height: 69px; position: absolute; left: 96px; top: 806px; background: black; border-radius: 9999px; }
+        .circle-small-middle-left { width: 59px; height: 59px; position: absolute; left: 203px; top: 523px; background: black; border-radius: 9999px; }
+        .circle-large-top-left { width: 184px; height: 184px; position: absolute; left: 46px; top: 182px; background: black; border-radius: 9999px; }
+        .divider-center { width: 393px; height: 0px; position: absolute; right: 495px; top: 352.5px; outline: 2px black solid; outline-offset: -1px; z-index: 120; }
+
+        /* 보이스 임베드 패널 */
+        .main-panel {
+            width: 85vw;
+            max-width: 1216px;
+            height: calc(100vh - 160px);
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #151515;
+            border-radius: 20px;
+            border: 2px solid #2A2A2A;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 1, 155, 0.25);
+            z-index: 110;
+            display: none; /* 기본은 숨김: Voice 클릭 시 오픈 */
+        }
+        .main-panel iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none; /* Voice 클릭 전까지 숨김 */
+        }
+        .panel-placeholder {
+            color: #e5e5e5;
+            font-family: 'NanumMyeongjo', serif;
+            font-size: 16px;
+            padding: 20px 28px;
+        }
+        /* 패널 오버레이 */
+        #embed-overlay {
+            position: fixed;
+            left: 0; top: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 109;
+            display: none;
+        }
+        /* 패널 닫기 버튼 */
+        .panel-close {
+            position: absolute; right: 14px; top: 10px;
+            width: 36px; height: 36px;
+            border: 0; background: transparent; color: #FF019B; cursor: pointer;
+            font-size: 26px; line-height: 36px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>도전! 버튜버</h1>
+    <div id="sidebar-toggle" class="image-icon-link" title="메뉴 열기/닫기">
+        <img class="image-icon-top" src="assets/image.png" alt="아이콘">
+    </div>
 
-        </header>
+    <div class="container"></div>
 
-        <div class="controls">
-            <button id="overlayBtn" class="btn btn-primary">Show Overlay</button>
-            <button id="voiceChangerBtn" class="btn btn-accent">Voice Changer</button>
-        </div>
-
-        <div class="status-panel">
-            <div class="status-row">
-                <span id="statusText" class="status">Status: Ready</span>
+    <div id="sidebar-overlay"></div>
+    <div id="sidebarContainer" class="sidebar-container">
+        <div class="sidebar-header"></div>
+        <div class="sidebar-main">
+            <a id="menuMy" class="menu-link menu-my" href="index.html">My</a>
+            <div id="divider1" class="divider divider-1"></div>
+            <div id="divider3" class="divider divider-3"></div>
+            <a id="menuAvatar" class="menu-link menu-avatar" href="avatar.html">Avatar</a>
+            <a id="menuVoice" class="menu-link menu-voice" href="voice.html">Voice</a>
+            <div id="divider2" class="divider divider-2"></div>
+            <a id="menuVoiceChanger" class="menu-link menu-voicechanger" href="#">VoiceChanger</a>
+            <div id="divider4" class="divider divider-4"></div>
+            <div id="menuCircle" class="menu-circle"></div>
+            <div id="imageBottom" class="image-bottom">
+                <img src="assets/image6.png" alt="Sidebar Bottom Image" onerror="this.onerror=null; this.src='https://placehold.co/200x230/FF019B/FFFFFF?text=Placeholder+Image';"/>
             </div>
-        </div>
-
-
-        <div class="log-panel" id="logPanel">
-            <div class="log-header">System Log</div>
-            <div class="log-content" id="logContent"></div>
+            <div id="slogan1" class="slogan-1">Y o u , b u t v i r t u a l !</div>
+            <div id="slogan2" class="slogan-2">Turn imagination into identity</div>
+            <div id="dividerBottom" class="divider divider-bottom" style="width: var(--bottom-divider-width); left: calc(50% - (var(--bottom-divider-width) / 2)); top: 800px;"></div>
         </div>
     </div>
+
+    <div class="status-panel">
+        <div class="status-row">
+            <span id="statusText" class="status">Status: Ready</span>
+        </div>
+    </div>
+
+    <!-- 환영 메시지 -->
+    <div class="text-welcome">환영합니다,</div>
+    <div class="text-symbol">✤</div>
+    <div id="textUsername" class="text-username">게스트</div>
+    <div class="text-suffix"> 님</div>
+    <div class="divider-center"></div>
+    <div class="circle-large-top-right"></div>
+    <div class="circle-medium-right-1"></div>
+    <div class="circle-small-right-2"></div>
+    <div class="circle-small-bottom-left"></div>
+    <div class="circle-small-middle-left"></div>
+    <div class="circle-large-top-left"></div>
+
+    <!-- 보이스 페이지는 별도 voice.html로 이동 -->
+    <div class="log-panel" id="logPanel">
+        <div class="log-header">System Log</div>
+        <div class="log-content" id="logContent"></div>
+    </div>
+
+    <script>
+        // 사이드바 토글
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarContainer = document.getElementById('sidebarContainer');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        function toggleSidebar() {
+            const isOpening = !sidebarContainer.classList.contains('sidebar-open');
+            sidebarContainer.classList.toggle('sidebar-open');
+            if (isOpening) {
+                sidebarOverlay.style.display = 'block';
+                setTimeout(() => sidebarOverlay.style.opacity = '1', 10);
+            } else {
+                sidebarOverlay.style.opacity = '0';
+                setTimeout(() => { sidebarOverlay.style.display = 'none'; }, 300);
+            }
+        }
+        if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+        if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sidebarWrapper.classList.contains('open')) toggleSidebar(); });
+
+        // Electron IPC: Voice 메뉴 → 음성학습 창 열기
+        // VoiceChanger 실행 (별도 페이지 아님)
+        try {
+            const { ipcRenderer } = require('electron');
+            document.querySelectorAll('.menu-voicechanger').forEach((el) => {
+                el.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ipcRenderer.send('start-voice-changer');
+                });
+            });
+        } catch (_) { /* 브라우저 단독 실행 시 무시 */ }
+
+        // 로그인에서 저장한 사용자명 표시
+        (function() {
+            try {
+                const name = localStorage.getItem('vtuber_user_name') || '게스트';
+                const target = document.getElementById('textUsername');
+                if (target) target.textContent = name;
+            } catch (_) {}
+        })();
+    </script>
 
     <script src="renderer.js"></script>
 </body>
