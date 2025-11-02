@@ -1,0 +1,216 @@
+<!doctype html>
+<html style="width:100%;height:100%;overflow:hidden">
+<head>
+    <meta charset="utf-8"/>
+    <title>Realtime VoiceChanger</title>
+    <style>
+        /* 커스텀 테마: 핑크/블랙 테마 적용 */
+        /* 폰트는 시스템 폰트 사용 (Google Fonts 로딩 문제 회피) */
+        
+        :root {
+            --primary-pink: #FF019B;
+            --primary-black: #000000;
+            --bg-dark: #151515;
+            --bg-darker: #0a0a0a;
+            --text-light: #e5e5e5;
+        }
+        
+        /* 전역 배경 및 폰트 */
+        body {
+            background: var(--bg-darker) !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif !important;
+        }
+        
+        /* 헤더 영역 커스터마이징 */
+        #app [class*="Header"] {
+            background: linear-gradient(135deg, var(--primary-pink) 0%, #d4017e 100%) !important;
+            border-bottom: 3px solid var(--primary-black) !important;
+        }
+        
+        /* 타이틀 텍스트 스타일 */
+        #app h1, #app h2, #app h3 {
+            color: var(--primary-black) !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif !important;
+            font-weight: 700 !important;
+        }
+        
+        /* 사이드바/메뉴 영역 */
+        #app [class*="Sidebar"], #app [class*="sidebar"] {
+            background: var(--bg-dark) !important;
+            border-right: 2px solid var(--primary-pink) !important;
+        }
+        
+        /* 버튼 스타일 */
+        #app button {
+            background: var(--primary-pink) !important;
+            color: white !important;
+            border: 2px solid var(--primary-black) !important;
+            border-radius: 8px !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        #app button:hover {
+            background: #d4017e !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(255, 1, 155, 0.4) !important;
+        }
+        
+        #app button:active {
+            transform: translateY(0) !important;
+        }
+        
+        /* 입력 필드 */
+        #app input, #app select, #app textarea {
+            background: var(--bg-dark) !important;
+            border: 2px solid #2a2a2a !important;
+            color: var(--text-light) !important;
+            border-radius: 6px !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        }
+        
+        #app input:focus, #app select:focus, #app textarea:focus {
+            border-color: var(--primary-pink) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(255, 1, 155, 0.2) !important;
+        }
+        
+        /* 카드/패널 스타일 */
+        #app [class*="card"], #app [class*="Card"], #app [class*="panel"], #app [class*="Panel"] {
+            background: var(--bg-dark) !important;
+            border: 2px solid #2a2a2a !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* 슬라이더 */
+        #app input[type="range"] {
+            accent-color: var(--primary-pink) !important;
+        }
+        
+        /* 체크박스 및 라디오 버튼 */
+        #app input[type="checkbox"], #app input[type="radio"] {
+            accent-color: var(--primary-pink) !important;
+        }
+        
+        /* 텍스트 색상 */
+        #app p, #app span, #app label, #app div {
+            color: var(--text-light) !important;
+        }
+        
+        /* 링크 스타일 */
+        #app a {
+            color: var(--primary-pink) !important;
+            text-decoration: none !important;
+            transition: opacity 0.3s !important;
+        }
+        
+        #app a:hover {
+            opacity: 0.8 !important;
+        }
+        
+        /* 데코레이션 원 추가 */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 200px;
+            height: 200px;
+            background: var(--primary-black);
+            border-radius: 50%;
+            top: -50px;
+            right: -50px;
+            z-index: 0;
+            opacity: 0.3;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            width: 150px;
+            height: 150px;
+            background: var(--primary-pink);
+            border-radius: 50%;
+            bottom: 30px;
+            left: -40px;
+            z-index: 0;
+            opacity: 0.2;
+        }
+        
+        /* 메인 앱 컨테이너 */
+        #app {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 스크롤바 커스터마이징 */
+        #app ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        #app ::-webkit-scrollbar-track {
+            background: var(--bg-darker);
+        }
+        
+        #app ::-webkit-scrollbar-thumb {
+            background: var(--primary-pink);
+            border-radius: 5px;
+        }
+        
+        #app ::-webkit-scrollbar-thumb:hover {
+            background: #d4017e;
+        }
+        
+        /* 로딩 인디케이터 */
+        #app [class*="loading"], #app [class*="Loading"] {
+            color: var(--primary-pink) !important;
+        }
+        
+        /* 툴팁 */
+        #app [class*="tooltip"], #app [class*="Tooltip"] {
+            background: var(--primary-black) !important;
+            color: white !important;
+            border: 1px solid var(--primary-pink) !important;
+        }
+    </style>
+    <script defer="defer" src="index.js"></script>
+    <script>
+        // DOM 로드 후 텍스트 변경
+        window.addEventListener('DOMContentLoaded', () => {
+            // w-okada 관련 텍스트 제거 및 변경
+            setTimeout(() => {
+                const walker = document.createTreeWalker(
+                    document.body,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
+                );
+                
+                let node;
+                const textNodesToReplace = [];
+                
+                while (node = walker.nextNode()) {
+                    if (node.nodeValue.includes('w-okada') || 
+                        node.nodeValue.includes('W-OKADA') ||
+                        node.nodeValue.includes('okada')) {
+                        textNodesToReplace.push(node);
+                    }
+                }
+                
+                textNodesToReplace.forEach(node => {
+                    node.nodeValue = node.nodeValue
+                        .replace(/w-okada/gi, 'Realtime VoiceChanger')
+                        .replace(/okada/gi, '');
+                });
+                
+                // 타이틀도 변경
+                document.title = 'Realtime VoiceChanger';
+            }, 500);
+        });
+    </script>
+</head>
+<body style="width:100%;height:100%;margin:0">
+    <div id="app" style="width:100%;height:100%"></div>
+</body>
+</html>
