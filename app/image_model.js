@@ -14,6 +14,59 @@ const db = getFirestore(app);
 
 const generateImageCallable = httpsCallable(functions, 'generate_image');
 const generateTha4Callable = httpsCallable(functions, 'generate_tha4_model');
+const checkModelRequestCallable = httpsCallable(functions, 'check_runpod_pod');
+const cancelModelRequestCallable = httpsCallable(functions, 'cancel_runpod_pod');
+
+// 모델 생성 요청을 취소 (내부적으로는, 요청을 받아 생성된 pod을 삭제함)
+export async function callCancelModelRequestCallable() {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("User is not authenticated. Please log in first.");
+    console.error("User is not authenticated. Please log in first.");
+    return;
+  }
+
+  try {
+    const result = await cancelModelRequestCallable();
+    const returnedData = result.data;
+
+    alert("성공적으로 취소되었습니다.");
+    console.log("성공적으로 취소되었습니다.");
+  } catch (error) {
+    alert(`ERROR, message: ${error.message}`);
+  }
+}
+
+// 현재 모델 생성 작업이 실행 중인지 아닌지를 체크
+export async function callCheckModelRequestFunction() {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("User is not authenticated. Please log in first.");
+    console.error("User is not authenticated. Please log in first.");
+    return;
+  }
+
+  try {
+    const result = await checkModelRequestCallable();
+    const returnedData = result.data;
+    if (returnedData && typeof returnedData === 'object') {
+      if (returnedData['status'] === "IN_PROGRESS") {
+        alert(`상태: 진행 중, lastStartedAt: ${returnedData['lastStartedAt']}`);
+      } else if (returnedData['status'] === "NONE") {
+        alert("현재 진행 중인 모델 생성 프로세스가 없습니다.");
+      } else {
+        alert(`에러: 알 수 없는 상태 ${returnedData['status']}`);
+      }
+    }
+  } catch (error) {
+    console.error("Error occurred while calling checkModelRequestCallable: ", error);
+    if (error.code) {
+      console.error("Error code: ", error.code);
+    }
+
+    throw error;
+  }
+}
 
 // 스토리지에 있는 이미지 중 가장 최근에 생성한 이미지를 기반으로 모델 생성 요청
 export async function callGenerateTha4ModelFunction() {
@@ -165,4 +218,3 @@ export async function downloadModel() {
     }
   }
 }
-

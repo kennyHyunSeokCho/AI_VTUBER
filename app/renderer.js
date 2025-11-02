@@ -2,6 +2,8 @@ const { ipcRenderer } = require('electron');
 
 import { toggleSignIn, handleSignUp } from './login.js'
 import {
+  callCancelModelRequestCallable,
+  callCheckModelRequestFunction,
   callGenerateTha4ModelFunction,
   callGenerateImageFunction,
   downloadUserImage,
@@ -22,6 +24,8 @@ const sendImagePromptBtn = document.getElementById('sendImagePrompt');
 const imagePromptInput = document.getElementById('imagePromptInput')
 const downloadImageBtn = document.getElementById('downloadImageBtn');
 const modelDownloadBtn = document.getElementById('modelDownloadBtn');
+const checkModelReqeustBtn = document.getElementById('checkModelReqeustBtn');
+const cancelModelRequestBtn = document.getElementById('cancelModelRequestBtn');
 
 const mainScreen = document.getElementById('mainScreen');
 const imageRequestScreen = document.getElementById('imageRequestScreen');
@@ -100,6 +104,9 @@ gotoImageRequestScreenBtn.addEventListener('click', () => {
 modelRequestBtn.addEventListener('click', callGenerateTha4ModelFunction);
 
 modelDownloadBtn.addEventListener('click', downloadModel);
+
+checkModelReqeustBtn.addEventListener('click', callCheckModelRequestFunction);
+cancelModelRequestBtn.addEventListener('click', callCancelModelRequestCallable);
 
 signUpBtn.addEventListener('click', handleSignUp);
 
