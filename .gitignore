@@ -52,5 +52,9 @@ temp/
 
 venv/*
 
+# Node modules
+node_modules/
+**/node_modules/
+
 # io dump to ABCI tasks
 *.o*
